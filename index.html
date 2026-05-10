@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <span class="brand-mark">D</span>
+    <span class="brand-name">Docus <em id="brand-tmpl-tag"></em></span>
+  </div>
+  <div class="actions">
+    <button class="session-pill" id="session-pill" title="Cambiar plantilla"></button>
+    <button class="btn btn-soft" id="open-settings" title="Configuración">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span class="btn-text">Configuración</span>
+    </button>
+    <button class="btn btn-primary" id="download-pdf">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span class="btn-text">Descargar PDF</span>
+    </button>
+  </div>
+</header>
+
+<div class="mobile-tabs">
+  <button data-tab="form" class="active">Formulario</button>
+  <button data-tab="preview">Vista previa</button>
+</div>
+
+<main class="layout">
+
+  <!-- ============== FORM ============== -->
+  <section class="form-panel active" data-tab-panel="form">
+    <div class="form-inner">
+
+      <div class="section">
+        <div class="section-title">Cotización <span class="badge">Datos generales</span></div>
+        <div class="row" style="margin-bottom:12px">
+          <div class="field">
+            <label>Número (opcional)</label>
+            <input id="f-number" placeholder="COT-001">
+          </div>
+          <div class="field">
+            <label>Fecha de emisión</label>
+            <input type="date" id="f-date">
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Validez (días)</label>
+            <input type="number" id="f-validity" min="1" max="365" value="30">
+          </div>
+          <div class="field"></div>
+        </div>
+      </div>
+
+      <div class="section" data-tmpl-only="lab">
+        <div class="section-title">Datos del paciente</div>
+        <div class="fields-auto">
+          <div class="field"><label>Paciente</label><input id="p-paciente" placeholder="Nombre"></div>
+          <div class="field" data-section="patient_clinica"><label>Clínica</label><input id="p-clinica" placeholder="Clínica veterinaria"></div>
+          <div class="field" data-section="patient_tutor"><label>Tutor</label><input id="p-tutor" placeholder="Apellido / nombre"></div>
+          <div class="field" data-section="patient_especie"><label>Especie</label><input id="p-especie" placeholder="Felino, canino…"></div>
+          <div class="field" data-section="patient_sexo"><label>Sexo</label>
+            <select id="p-sexo">
+              <option value="">—</option>
+              <option>Macho</option>
+              <option>Hembra</option>
+            </select>
+          </div>
+          <div class="field" data-section="patient_peso"><label>Peso</label><input id="p-peso" placeholder="4.7 kg aprox."></div>
+        </div>
+        <div class="field" data-section="service_address" style="margin-top:12px"><label>Dirección del servicio</label><input id="p-service-address" placeholder="Dirección o lugar (toma de muestra a domicilio, etc.)"></div>
+      </div>
+
+      <div class="section" data-tmpl-only="general">
+        <div class="section-title">Datos del cliente</div>
+        <div class="fields-auto">
+          <div class="field"><label>Nombre completo</label><input id="c-nombre" placeholder="Nombre del cliente"></div>
+          <div class="field" data-section="client_empresa"><label>Empresa</label><input id="c-empresa" placeholder="Razón social u opcional"></div>
+          <div class="field" data-section="client_telefono"><label>Teléfono</label><input id="c-telefono" placeholder="Celular o fijo"></div>
+          <div class="field" data-section="client_email"><label>Email</label><input id="c-email" placeholder="correo@ejemplo.com" type="email"></div>
+        </div>
+        <div class="field" data-section="service_address" style="margin-top:12px"><label>Dirección del servicio</label><input id="c-service-address" placeholder="Dirección o lugar del evento"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title" id="items-title">Exámenes solicitados</div>
+        <div class="list" id="exams-list"></div>
+        <button class="add-btn" id="add-exam">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span id="add-item-label">Agregar examen</span>
+        </button>
+        <details class="catalog">
+          <summary>Catálogo guardado</summary>
+          <div class="catalog-list" id="catalog-list"></div>
+        </details>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Resumen de costos</div>
+        <div class="totals-controls">
+          <div class="totals-control" id="ctrl-discount"></div>
+          <div class="totals-control" id="ctrl-tax"></div>
+          <div class="totals-control" id="ctrl-paid"></div>
+        </div>
+      </div>
+
+      <div class="section" data-section="indications">
+        <div class="section-title" id="indications-title">Indicaciones previas</div>
+        <div class="list" id="ind-list"></div>
+        <button class="add-btn" id="add-ind">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Agregar indicación
+        </button>
+      </div>
+
+      <div class="section" data-section="observations">
+        <div class="section-title">Observaciones</div>
+        <div class="field">
+          <textarea id="obs" rows="4" placeholder="Notas, aclaraciones, alcance del servicio…"></textarea>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============== PREVIEW ============== -->
+  <section class="preview-panel" data-tab-panel="preview">
+    <div class="preview-hint">Vista previa · A4</div>
+    <div class="preview-scaler">
+      <div id="preview-doc" class="doc"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============== SETTINGS MODAL ============== -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Configuración</h2>
+      <button class="btn-icon" id="close-settings" title="Cerrar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+
+      <div>
+        <div class="subsection-title">Información de la empresa</div>
+        <div class="logo-uploader" style="margin-bottom:14px">
+          <div class="logo-preview" id="logo-preview"><span class="ph">Logo</span></div>
+          <div class="logo-actions">
+            <input type="file" id="logo-input" accept="image/*" style="display:none">
+            <div class="logo-buttons">
+              <button class="btn btn-soft" id="logo-btn">Subir logo</button>
+              <button class="btn-link" id="logo-remove">Quitar</button>
+            </div>
+            <span class="hint">PNG o JPG, fondo transparente recomendado.</span>
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:10px">
+          <label>Razón social</label>
+          <input id="s-name" placeholder="INULABORATORIOS S.A.C.">
+        </div>
+        <div class="field" style="margin-bottom:10px">
+          <label>Dirección</label>
+          <input id="s-address" placeholder="Alameda del Sereno 495 – Santiago de Surco, Lima">
+        </div>
+        <div class="row">
+          <div class="field"><label>Teléfono</label><input id="s-phone" placeholder="954 904 248"></div>
+          <div class="field"><label>Moneda</label>
+            <select id="s-currency">
+              <option value="S/">S/ (Soles)</option>
+              <option value="$">$ (USD)</option>
+              <option value="€">€ (EUR)</option>
+              <option value="MXN $">MXN</option>
+              <option value="COP $">COP</option>
+              <option value="CLP $">CLP</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="subsection-title">Paleta de colores (3)</div>
+        <div class="swatches">
+          <div class="swatch">
+            <span class="swatch-label">Principal</span>
+            <div class="swatch-input">
+              <input type="color" id="s-c1" value="#0e7c8e">
+              <span class="hex" id="s-c1-hex">#0E7C8E</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <span class="swatch-label">Secundario</span>
+            <div class="swatch-input">
+              <input type="color" id="s-c2" value="#1f3a5f">
+              <span class="hex" id="s-c2-hex">#1F3A5F</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <span class="swatch-label">Acento (claro)</span>
+            <div class="swatch-input">
+              <input type="color" id="s-c3" value="#e8f4f6">
+              <span class="hex" id="s-c3-hex">#E8F4F6</span>
+            </div>
+          </div>
+        </div>
+        <div class="subsection-title" style="margin-top:14px">Paletas predefinidas</div>
+        <div class="presets" id="presets"></div>
+      </div>
+
+      <div>
+        <div class="subsection-title">Secciones del documento</div>
+        <div class="section-toggles" id="section-toggles"></div>
+      </div>
+
+      <div>
+        <div class="subsection-title">Predeterminados</div>
+        <div class="row" style="margin-bottom:10px">
+          <div class="field">
+            <label>Tasa de IGV (%)</label>
+            <input type="number" id="s-tax-rate" min="0" max="100" step="0.1" value="18">
+          </div>
+          <div class="field">
+            <label>Etiqueta de impuesto</label>
+            <input id="s-tax-label" value="IGV" placeholder="IGV / IVA">
+          </div>
+        </div>
+        <div class="field" style="margin-bottom:10px">
+          <label>Indicaciones predeterminadas (una por línea)</label>
+          <textarea id="s-ind" rows="4" placeholder="Ayuno de 8–12 horas previo a la toma de muestra sanguínea.
+Informar si el paciente está bajo tratamiento farmacológico."></textarea>
+        </div>
+        <div class="field">
+          <label>Observaciones predeterminadas</label>
+          <textarea id="s-obs" rows="3" placeholder="La toma de muestra no está incluida en la presente cotización."></textarea>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-foot">
+      <button class="btn-danger-link" id="logout-btn">Cerrar sesión</button>
+      <button class="btn btn-ghost" id="cancel-settings">Cancelar</button>
+      <button class="btn btn-primary" id="save-settings">Guardar configuración</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ============== LOGIN OVERLAY ============== -->
+<div class="auth-overlay" id="login-overlay">
+  <div class="auth-card">
+
+    <!-- STATE A: account list + create -->
+    <div id="login-state-list">
+      <div class="auth-brand">
+        <span class="brand-mark">D</span>
+      </div>
+      <h2 class="auth-title">Docus</h2>
+      <p class="auth-tagline">by Darker Project</p>
+
+      <div class="account-list" id="account-list"></div>
+
+      <div class="auth-divider" id="auth-divider"><span>nueva cuenta</span></div>
+
+      <div class="auth-form-stack">
+        <input id="new-account-name" placeholder="Nombre de la cuenta" maxlength="32" autocomplete="off">
+        <input type="password" id="new-account-pwd" placeholder="Contraseña (mín. 4 caracteres)" minlength="4" autocomplete="new-password">
+        <button class="btn btn-primary" id="create-account-btn">Crear cuenta</button>
+      </div>
+
+      <p class="auth-note">Tus datos se guardan en este navegador.</p>
+    </div>
+
+    <!-- STATE B: password prompt -->
+    <div id="login-state-password" style="display:none">
+      <button class="auth-back" id="back-to-list">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="15 18 9 12 15 6"/></svg>
+        Cambiar cuenta
+      </button>
+
+      <h2 class="auth-title" style="margin-top:18px">Bienvenido de vuelta</h2>
+      <p class="auth-subtitle">Ingresa tu contraseña</p>
+
+      <div class="pwd-prompt-acc">
+        <div class="acc-avatar" id="pwd-prompt-avatar">C</div>
+        <div>
+          <div class="pwd-name" id="pwd-prompt-name"></div>
+          <div class="pwd-meta" id="pwd-prompt-meta"></div>
+        </div>
+      </div>
+
+      <div class="auth-form-stack">
+        <input type="password" id="login-password" placeholder="Contraseña" autocomplete="current-password">
+        <button class="btn btn-primary" id="login-submit-btn">Entrar</button>
+      </div>
+
+      <div class="auth-error" id="login-error">Contraseña incorrecta</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============== TEMPLATE SELECTOR OVERLAY ============== -->
+<div class="auth-overlay" id="template-overlay">
+  <div class="auth-card auth-card-wide">
+    <h2 class="auth-greeting">Hola, <span id="greeting-name"></span></h2>
+    <p class="auth-subtitle">Elige una plantilla</p>
+
+    <div class="template-grid">
+      <button class="template-card" data-template="lab">
+        <div class="tc-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M9 3h6v5l4 11a2 2 0 0 1-2 3H7a2 2 0 0 1-2-3l4-11V3z"/>
+            <line x1="9" y1="14" x2="15" y2="14"/>
+          </svg>
+        </div>
+        <div class="tc-title">Lab</div>
+        <div class="tc-desc">Para laboratorios y servicios técnicos. Datos del paciente, exámenes con tiempo y tipo de muestra.</div>
+      </button>
+
+      <button class="template-card" data-template="general">
+        <div class="tc-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+            <line x1="12" y1="22.08" x2="12" y2="12"/>
+          </svg>
+        </div>
+        <div class="tc-title">General</div>
+        <div class="tc-desc">Para alquileres, servicios y productos. Datos del cliente, items con cantidad y precio unitario.</div>
+      </button>
+    </div>
+
+    <button class="btn-link" id="logout-from-template">Cerrar sesión</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
