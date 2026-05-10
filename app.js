@@ -928,6 +928,7 @@ async function downloadPDF(){
   btn.disabled = true;
   btn.innerHTML = `<span class="spinner"></span><span class="btn-text">Generando…</span>`;
 
+  let clone = null;
   try{
     // Verify libraries loaded
     if(typeof html2canvas !== 'function'){
@@ -945,32 +946,33 @@ async function downloadPDF(){
     const node = $('#preview-doc');
     if(!node) throw new Error('No se encontró la vista previa');
 
-    // Force desktop dimensions for the capture (independent of viewport)
-    const prevWidth = node.style.width;
-    const prevTransform = node.style.transform;
-    node.style.width = '794px';
-    node.style.transform = 'none';
+    // Create a hidden off-screen clone with forced desktop A4 styling.
+    // This guarantees the PDF always renders at full desktop size with desktop
+    // fonts/padding, regardless of the actual viewport (mobile media queries
+    // would otherwise affect font-size, padding, etc).
+    clone = node.cloneNode(true);
+    clone.id = '';
+    clone.classList.add('doc-pdf-mode');
+    clone.style.position = 'absolute';
+    clone.style.left = '-9999px';
+    clone.style.top = '0';
+    document.body.appendChild(clone);
 
-    // Two RAFs to let layout settle after style changes
+    // Two RAFs to let layout settle after DOM insertion
     await new Promise(r => requestAnimationFrame(()=>requestAnimationFrame(r)));
 
     let canvas;
     try{
-      canvas = await html2canvas(node, {
+      canvas = await html2canvas(clone, {
         scale:2,
         useCORS:true,
         backgroundColor:'#ffffff',
         logging:false,
+        windowWidth: 1280,
       });
     }catch(hcErr){
-      // Restore styles before rethrowing
-      node.style.width = prevWidth;
-      node.style.transform = prevTransform;
       throw new Error('html2canvas: ' + (hcErr && hcErr.message ? hcErr.message : 'falló render'));
     }
-
-    node.style.width = prevWidth;
-    node.style.transform = prevTransform;
 
     if(!canvas) throw new Error('No se generó el canvas');
 
@@ -999,8 +1001,15 @@ async function downloadPDF(){
       heightLeft -= pageHeight;
     }
 
-    const safe = (state.quote.paciente||'cotizacion').replace(/[^a-z0-9_-]+/gi,'_').toLowerCase();
-    const fname = `cotizacion_${safe}_${state.quote.date}.pdf`;
+    const customerName = state.template === 'general'
+      ? state.quote.clientNombre
+      : state.quote.paciente;
+    const cleaned = (customerName || '').trim()
+      .replace(/[^a-z0-9]+/gi, '-')
+      .replace(/^-+|-+$/g, '')
+      .toLowerCase();
+    const safe = cleaned || 'noname';
+    const fname = `cotizacion-${safe}-${state.quote.date}.pdf`;
     pdf.save(fname);
     showToast('PDF descargado');
   }catch(e){
@@ -1008,6 +1017,9 @@ async function downloadPDF(){
     const msg = (e && e.message) ? e.message : (typeof e === 'string' ? e : 'desconocido');
     showToast('Error: ' + msg.slice(0, 80), true);
   }finally{
+    if(clone && clone.parentNode){
+      clone.parentNode.removeChild(clone);
+    }
     btn.disabled = false;
     btn.innerHTML = orig;
   }
