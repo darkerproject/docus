@@ -1014,16 +1014,33 @@ body:has(.modal-overlay.open){
   }
   .modal-head h2{font-size:17px}
   .modal-body{
-    padding:16px;
-    gap:16px;
+    padding:14px 16px;
+    gap:14px;
   }
+  .modal-body .field input,
+  .modal-body .field textarea,
+  .modal-body .field select{
+    padding:7px 11px;
+    line-height:1.3;
+  }
+  .modal-body .fields-auto{gap:10px}
+  .modal-body .field{gap:5px}
   .modal-foot{
-    padding:10px 16px;
-    padding-bottom:calc(10px + env(safe-area-inset-bottom));
+    padding:8px 16px;
+    padding-bottom:calc(8px + env(safe-area-inset-bottom));
+    gap:4px;
     background:var(--bg-2) !important;
   }
-  .subsection-title{font-size:10px;margin-bottom:8px}
-  .toggle-row{padding:9px 12px}
+  .modal-foot .btn{
+    padding-top:7px;
+    padding-bottom:7px;
+  }
+  .modal-foot .btn-danger-link{
+    padding:5px 14px;
+  }
+  .subsection-title{font-size:10px;margin-bottom:7px}
+  .toggle-row{padding:7px 12px}
+  .section-toggles{gap:4px}
   /* Hide content panels and tabs while config is open (header stays) */
   body:has(.modal-overlay.open) .form-panel,
   body:has(.modal-overlay.open) .preview-panel,
