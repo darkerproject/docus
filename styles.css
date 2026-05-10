@@ -1011,6 +1011,12 @@ body:has(.modal-overlay.open){
   }
   .modal-foot{
     padding-bottom:calc(10px + env(safe-area-inset-bottom));
+    background:var(--bg-2);
+  }
+  /* When settings is open, fully replace the page: hide the main header & tabs */
+  body:has(.modal-overlay.open) .app-header,
+  body:has(.modal-overlay.open) .mobile-tabs{
+    display:none !important;
   }
   .modal-body{
     -webkit-overflow-scrolling:touch;
