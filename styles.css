@@ -980,6 +980,10 @@ body:has(.modal-overlay.open){
     -webkit-overflow-scrolling:touch;
     overscroll-behavior:contain;
   }
+  /* Prevent iOS Safari auto-zoom on input focus (any input <16px triggers it) */
+  input,textarea,select{
+    font-size:16px !important;
+  }
 }
 @media (max-width:480px){
   .form-panel,.preview-panel{padding:18px 16px}
