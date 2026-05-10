@@ -547,8 +547,15 @@ details.catalog[open] summary::before{transform:rotate(90deg)}
 .modal-foot{
   padding:14px 22px;
   border-top:1px solid var(--line);
-  display:flex;justify-content:flex-end;gap:8px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
   background:var(--bg);
+}
+.modal-foot-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
 }
 .subsection-title{
   font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
@@ -653,7 +660,9 @@ details.catalog[open] summary::before{transform:rotate(90deg)}
 }
 /* Lock body scroll while any auth overlay is open (prevents iOS rubber-band leak) */
 html:has(.auth-overlay.active),
-body:has(.auth-overlay.active){
+body:has(.auth-overlay.active),
+html:has(.modal-overlay.open),
+body:has(.modal-overlay.open){
   overflow:hidden;
   height:100%;
 }
@@ -877,7 +886,7 @@ body:has(.auth-overlay.active){
   font-size:13px;font-weight:600;
   color:var(--danger);
   padding:9px 14px;border-radius:10px;
-  margin-right:auto;
+  align-self:flex-start;
   transition:background .15s ease;
 }
 .btn-danger-link:hover{background:rgba(179,38,30,.08)}
@@ -887,6 +896,7 @@ body:has(.auth-overlay.active){
   body{padding-top:110px}
   .layout{grid-template-columns:1fr;height:auto}
   .form-panel,.preview-panel{padding:22px 36px}
+  .preview-panel{background:var(--bg)}
   .form-inner{max-width:none}
   .preview-panel{display:none}
   .form-panel{display:none}
