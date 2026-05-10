@@ -909,7 +909,7 @@ body:has(.modal-overlay.open){
   .preview-panel.active{display:flex;flex-direction:column}
   .mobile-tabs{
     display:flex;gap:4px;
-    background:rgba(28,28,30,.78);
+    background:rgba(17,24,39,.82);
     backdrop-filter:saturate(180%) blur(20px);
     -webkit-backdrop-filter:saturate(180%) blur(20px);
     padding:6px 14px;
