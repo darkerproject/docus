@@ -574,7 +574,7 @@ details.catalog[open] summary::before{transform:rotate(90deg)}
 .modal-head h2{
   font-family:'Fraunces',serif;font-weight:500;font-size:20px;letter-spacing:-.02em;
 }
-.modal-body{padding:22px;overflow-y:auto;display:flex;flex-direction:column;gap:22px}
+.modal-body{padding:22px;overflow-y:auto;display:flex;flex-direction:column;gap:22px;flex:1;min-height:0}
 .modal-foot{
   padding:10px 22px 10px;
   border-top:1px solid var(--line);
@@ -1011,7 +1011,7 @@ body:has(.modal-overlay.open){
   }
   .modal-foot{
     padding-bottom:calc(10px + env(safe-area-inset-bottom));
-    background:var(--bg-2);
+    background:var(--bg-2) !important;
   }
   /* When settings is open, fully replace the page: hide the main header & tabs */
   body:has(.modal-overlay.open) .app-header,
