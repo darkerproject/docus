@@ -24,6 +24,7 @@ body{
   font-size:14px;
   line-height:1.5;
   -webkit-font-smoothing:antialiased;
+  padding-top:65px;
 }
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
 input,textarea,select{font-family:inherit;font-size:14px;color:inherit}
@@ -32,7 +33,7 @@ textarea{resize:vertical;min-height:72px}
 
 /* ---------- App shell ---------- */
 .app-header{
-  position:sticky;top:0;z-index:50;
+  position:fixed;top:0;left:0;right:0;z-index:50;
   display:flex;align-items:center;justify-content:space-between;
   padding:14px 22px;
   background:rgba(243,244,246,.85);
@@ -152,6 +153,23 @@ textarea{resize:vertical;min-height:72px}
 .field input:focus,.field textarea:focus,.field select:focus{
   outline:none;background:var(--bg-2);border-color:var(--ink-2);
   box-shadow:0 0 0 3px rgba(0,0,0,.05);
+}
+
+/* iOS Safari fix: input[type=date] ignores width:100% and uses intrinsic min-width.
+   Forcing appearance:none + min-width:0 makes it respect the container width. */
+.field input[type="date"],
+.field input[type="time"],
+.field input[type="datetime-local"]{
+  -webkit-appearance:none;
+  appearance:none;
+  min-width:0;
+  width:100%;
+  display:block;
+  line-height:normal;
+}
+.field input[type="date"]::-webkit-date-and-time-value{
+  text-align:left;
+  min-width:0;
 }
 .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
@@ -857,6 +875,7 @@ details.catalog[open] summary::before{transform:rotate(90deg)}
 
 /* ---------- Mobile ---------- */
 @media (max-width:1023px){
+  body{padding-top:107px}
   .layout{grid-template-columns:1fr;height:auto}
   .form-panel,.preview-panel{padding:22px 36px}
   .form-inner{max-width:none}
@@ -868,7 +887,7 @@ details.catalog[open] summary::before{transform:rotate(90deg)}
     display:flex;gap:0;
     background:var(--ink);
     padding:0 18px;
-    position:sticky;top:60px;z-index:40;
+    position:fixed;top:60px;left:0;right:0;z-index:40;
   }
   .mobile-tabs button{
     flex:1;padding:13px 0;
@@ -893,12 +912,26 @@ details.catalog[open] summary::before{transform:rotate(90deg)}
   .actions .btn-text{display:none}
   .app-header{padding:12px 16px}
   .brand-name{font-size:16px}
+  /* Hide empty placeholder fields used only for desktop grid alignment */
+  .field:empty{display:none}
 }
 @media (max-width:480px){
   .form-panel,.preview-panel{padding:18px 16px}
+  .section{padding:18px 18px}
   .doc{padding:22px 18px;font-size:10.5px}
   .doc-table{font-size:10px}
   .doc-table thead th,.doc-table tbody td{padding:8px 8px}
+}
+/* iPhone SE / mini territory — tightest layout */
+@media (max-width:380px){
+  .auth-overlay{padding:16px}
+  .auth-card{padding:24px 18px}
+  .template-card{padding:18px 16px}
+  .template-card .tc-title{font-size:16px}
+  .form-panel,.preview-panel{padding:16px 14px}
+  .section{padding:16px 16px}
+  .auth-greeting{font-size:22px}
+  .auth-title{font-size:26px}
 }
 
 /* ---------- Print stylesheet (fallback) ---------- */
