@@ -18,7 +18,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
-  font-family:'Manrope',-apple-system,system-ui,sans-serif;
+  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
   background:var(--bg);
   color:var(--ink);
   font-size:14px;
@@ -131,7 +131,7 @@ textarea{resize:vertical;min-height:72px}
   display:flex;align-items:baseline;justify-content:space-between;gap:10px;
 }
 .section-title .badge{
-  font-family:'Manrope';font-weight:600;font-size:10px;
+  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:600;font-size:10px;
   letter-spacing:.1em;text-transform:uppercase;
   color:var(--ink-3);
   padding:3px 8px;border-radius:999px;background:var(--bg);
@@ -317,7 +317,7 @@ details.catalog[open] summary::before{transform:rotate(90deg)}
   background:#fff;
   color:#1a1a1a;
   padding:50px 56px 40px;
-  font-family:'Manrope',sans-serif;
+  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
   font-size:11.5px;
   line-height:1.5;
   box-shadow:var(--shadow-lg);
@@ -886,7 +886,7 @@ body:has(.modal-overlay.open){
   display:flex;align-items:center;gap:8px;
 }
 .template-card .tc-tag{
-  font-family:'Manrope';
+  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
   font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
   background:var(--line);color:var(--ink-2);
   padding:2px 7px;border-radius:999px;
@@ -1026,10 +1026,10 @@ body:has(.modal-overlay.open){
   .modal-body .fields-auto{gap:14px}
   .modal-body .field{gap:5px}
   .modal-foot{
-    padding:8px 16px;
-    padding-bottom:calc(8px + env(safe-area-inset-bottom));
+    padding:12px 16px;
+    padding-bottom:calc(20px + env(safe-area-inset-bottom));
     gap:4px;
-    background:var(--bg-2) !important;
+    background:var(--bg) !important;
   }
   .modal-foot .btn{
     padding-top:7px;
