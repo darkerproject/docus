@@ -987,8 +987,10 @@ body:has(.modal-overlay.open){
   #brand-tmpl-tag{display:none}
   /* Hide empty placeholder fields used only for desktop grid alignment */
   .field:empty{display:none}
-  /* Settings modal becomes full-page on mobile (no floating card, no backdrop) */
+  /* Configuración loads as a panel inside the content area, below the main Docus header
+     (header stays visible at top). Form/preview/tabs are hidden while config is open. */
   .modal-overlay{
+    top:calc(60px + env(safe-area-inset-top));
     padding:0;
     background:var(--bg-2);
     backdrop-filter:none;
@@ -1006,15 +1008,25 @@ body:has(.modal-overlay.open){
     transition:none;
   }
   .modal-overlay.open .modal{transform:none}
+  /* Reduced sizing for phone */
   .modal-head{
-    padding-top:calc(18px + env(safe-area-inset-top));
+    padding:14px 16px;
+  }
+  .modal-head h2{font-size:17px}
+  .modal-body{
+    padding:16px;
+    gap:16px;
   }
   .modal-foot{
+    padding:10px 16px;
     padding-bottom:calc(10px + env(safe-area-inset-bottom));
     background:var(--bg-2) !important;
   }
-  /* When settings is open, fully replace the page: hide the main header & tabs */
-  body:has(.modal-overlay.open) .app-header,
+  .subsection-title{font-size:10px;margin-bottom:8px}
+  .toggle-row{padding:9px 12px}
+  /* Hide content panels and tabs while config is open (header stays) */
+  body:has(.modal-overlay.open) .form-panel,
+  body:has(.modal-overlay.open) .preview-panel,
   body:has(.modal-overlay.open) .mobile-tabs{
     display:none !important;
   }
