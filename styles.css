@@ -493,20 +493,31 @@ details.catalog[open] summary::before{transform:rotate(90deg)}
 .cv-contact-list{
   display:flex;
   flex-direction:column;
-  gap:6px;
+  gap:7px;
   font-size:10.5px;
   word-break:break-word;
 }
 .cv-contact-row{
   display:flex;
-  gap:6px;
+  gap:8px;
   align-items:flex-start;
   color:var(--cv-side-text);
 }
-.cv-contact-label{
-  font-weight:600;
-  min-width:62px;
-  opacity:.85;
+.cv-contact-icon{
+  flex-shrink:0;
+  width:13px;height:13px;
+  display:inline-flex;
+  align-items:center;justify-content:center;
+  margin-top:1px;          /* visually align with cap-height of first text line */
+  opacity:.9;
+  color:inherit;
+}
+.cv-contact-icon svg{display:block}
+.cv-contact-value{
+  flex:1;
+  min-width:0;             /* lets flex item shrink so word-break can kick in */
+  word-break:break-word;
+  line-height:1.45;
 }
 .cv-list-stack{
   display:flex;
