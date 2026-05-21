@@ -435,7 +435,8 @@ details.catalog[open] summary::before{transform:rotate(90deg)}
   display:grid;
   grid-template-columns:32% 68%;
   width:100%;
-  min-height:100%;
+  flex:1;
+  min-height:1123px;
 }
 .cv-sidebar{
   background:var(--cv-side-bg);
@@ -1311,18 +1312,23 @@ body:has(.modal-overlay.open){
     background:rgba(255,255,255,.13);
   }
   .doc{
-    width:100%;
+    /* On mobile we scale the desktop A4 instead of going fluid, so the layout
+       matches exactly what the PDF/desktop view will look like. The scale value
+       is set via JS based on the .preview-scaler width. */
+    width:794px;
+    min-height:1123px;
+    padding:50px 56px 40px;
+    flex-shrink:0;
     transform-origin:top center;
-    padding:30px 28px;
-    min-height:auto;
+    transform:scale(var(--preview-scale, 0.42));
     box-shadow:0 1px 3px rgba(15,23,42,.08);
   }
-  .doc-head{grid-template-columns:60px 1fr auto;gap:12px}
-  .doc-logo{width:60px;height:60px}
-  .doc-company .doc-name{font-size:13px}
-  .doc-company .doc-meta{font-size:9.5px}
-  .doc-badge{padding:6px 12px;font-size:11px}
-  .doc-patient{grid-template-columns:1fr;gap:5px}
+  .doc.cv-mode{padding:0}
+  .preview-scaler{
+    overflow:hidden;
+    width:100%;
+    /* height set by JS to (1123 * --preview-scale)px so scaled doc fits perfectly */
+  }
   .row,.row-3{grid-template-columns:1fr}
   .actions .btn-text{display:none}
   .app-header{padding:calc(12px + env(safe-area-inset-top)) 16px 12px}
@@ -1419,9 +1425,6 @@ body:has(.modal-overlay.open){
 @media (max-width:480px){
   .form-panel,.preview-panel{padding:18px 16px}
   .section{padding:18px 18px}
-  .doc{padding:22px 18px;font-size:10.5px}
-  .doc-table{font-size:10px}
-  .doc-table thead th,.doc-table tbody td{padding:8px 8px}
 }
 /* iPhone SE / mini territory — tightest layout */
 @media (max-width:380px){

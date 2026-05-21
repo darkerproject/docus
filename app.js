@@ -2371,6 +2371,7 @@ async function logout(){
 async function init(){
   await loadAccounts();
   wire();
+  setupPreviewScale();
 
   const session = await loadSession();
   if(session && session.account && session.template){
@@ -2389,4 +2390,38 @@ async function init(){
     showLogin();
   }
 }
+
+/* Mobile preview scaling: render the desktop A4 (.doc 794x1123) and scale it
+   down to fit the available width via CSS transform, instead of going fluid.
+   This keeps the preview pixel-accurate to what the PDF will look like. */
+function updatePreviewScale(){
+  const scaler = document.querySelector('.preview-scaler');
+  if(!scaler) return;
+  if(window.matchMedia('(max-width: 1023px)').matches){
+    const w = scaler.clientWidth;
+    if(w === 0) return;            // hidden (preview tab not active) — wait for visibility
+    const scale = Math.min(1, w / 794);  // never upscale
+    scaler.style.setProperty('--preview-scale', scale);
+    scaler.style.height = (1123 * scale) + 'px';
+  }else{
+    scaler.style.removeProperty('--preview-scale');
+    scaler.style.height = '';
+  }
+}
+
+function setupPreviewScale(){
+  const scaler = document.querySelector('.preview-scaler');
+  if(!scaler) return;
+  if(typeof ResizeObserver !== 'undefined'){
+    new ResizeObserver(()=>updatePreviewScale()).observe(scaler);
+  }
+  window.addEventListener('resize', updatePreviewScale);
+  // Also fire when the preview tab becomes active (visibility change)
+  const previewBtn = document.querySelector('.mobile-tabs button[data-tab="preview"]');
+  if(previewBtn){
+    previewBtn.addEventListener('click', ()=>setTimeout(updatePreviewScale, 0));
+  }
+  updatePreviewScale();
+}
+
 init();
