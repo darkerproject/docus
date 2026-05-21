@@ -1167,8 +1167,28 @@ function wire(){
     showLoginStateList();
   });
 
+  // Doctype selector: Cotización goes to template selector; CV is disabled
+  $$('#doctype-overlay .template-card').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      if(card.classList.contains('disabled')) return;
+      const doctype = card.dataset.doctype;
+      if(doctype === 'cotizacion'){
+        showTemplateSelector();
+      }
+    });
+  });
+
+  // Logout from doctype selector (back to login)
+  $('#logout-from-doctype').addEventListener('click', async ()=>{
+    state.account = null;
+    state.accountName = '';
+    state.template = null;
+    await clearSessionStorage();
+    showLogin();
+  });
+
   // Template selector: pick a template
-  $$('.template-card').forEach(card=>{
+  $$('#template-overlay .template-card').forEach(card=>{
     card.addEventListener('click', ()=>{
       if(card.classList.contains('disabled')) return;
       selectTemplate(card.dataset.template);
@@ -1216,6 +1236,7 @@ async function hashPwd(pwd, saltB64){
 ============================================================= */
 function showLogin(){
   $('#login-overlay').classList.add('active');
+  $('#doctype-overlay').classList.remove('active');
   $('#template-overlay').classList.remove('active');
   showLoginStateList();
   const inp = $('#new-account-name');
@@ -1352,7 +1373,7 @@ async function doLogin(acc){
   if(acc.lastTemplate){
     await selectTemplate(acc.lastTemplate);
   }else{
-    showTemplateSelector();
+    showDocTypeSelector();
   }
 }
 
@@ -1391,8 +1412,16 @@ async function deleteAccount(accSlug){
   renderAccountsList();
 }
 
+function showDocTypeSelector(){
+  $('#login-overlay').classList.remove('active');
+  $('#template-overlay').classList.remove('active');
+  $('#doctype-overlay').classList.add('active');
+  $('#doctype-greeting-name').textContent = state.accountName;
+}
+
 function showTemplateSelector(){
   $('#login-overlay').classList.remove('active');
+  $('#doctype-overlay').classList.remove('active');
   $('#template-overlay').classList.add('active');
   $('#greeting-name').textContent = state.accountName;
 }
@@ -1409,6 +1438,7 @@ async function selectTemplate(tmpl){
   await saveSession();
 
   $('#login-overlay').classList.remove('active');
+  $('#doctype-overlay').classList.remove('active');
   $('#template-overlay').classList.remove('active');
 
   await loadDataForSession();
