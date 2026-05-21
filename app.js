@@ -1232,6 +1232,11 @@ function wire(){
     });
   });
 
+  // Back button in template selector → go to doctype selector
+  $('#template-back').addEventListener('click', ()=>{
+    showDocTypeSelector();
+  });
+
   // Logout from template selector (back to login screen)
   $('#logout-from-template').addEventListener('click', async ()=>{
     state.account = null;
@@ -1239,13 +1244,6 @@ function wire(){
     state.template = null;
     await clearSessionStorage();
     showLogin();
-  });
-
-  // Back button in header → save current quote, return to doctype selector
-  $('#back-to-doctype').addEventListener('click', async ()=>{
-    if(!state.account) return;
-    await persistQuote();
-    showDocTypeSelector();
   });
 
   // Session pill in header → back to template selector (Lab/General).

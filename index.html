@@ -15,9 +15,6 @@
 
 <header class="app-header">
   <div class="brand">
-    <button class="brand-back" id="back-to-doctype" title="Volver al inicio" aria-label="Volver">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
-    </button>
     <span class="brand-mark">D</span>
     <span class="brand-name">Docus <em id="brand-tmpl-tag"></em></span>
   </div>
@@ -356,6 +353,10 @@ Informar si el paciente está bajo tratamiento farmacológico."></textarea>
 
 <div class="auth-overlay" id="template-overlay">
   <div class="auth-card auth-card-wide">
+    <button class="auth-back" id="template-back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="15 18 9 12 15 6"/></svg>
+      Atrás
+    </button>
     <h2 class="auth-greeting">Hola, <span id="greeting-name"></span></h2>
     <p class="auth-subtitle">Elige una plantilla</p>
 
