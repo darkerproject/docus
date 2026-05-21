@@ -238,6 +238,8 @@ async function loadDataForSession(){
     name:'',
     role:'',
     perfil:'',
+    photoData:'',
+    photoShape:'circle',
     contacto:{email:'',phone:'',address:'',website:''},
     idiomas:[],
     experiencia:[],
@@ -250,6 +252,9 @@ async function loadDataForSession(){
       try{
         const saved = JSON.parse(cvRaw);
         state.cv = {...defaultCV, ...saved, contacto:{...defaultCV.contacto, ...(saved.contacto||{})}};
+        // migrate legacy shape values that no longer exist
+        if(state.cv.photoShape === 'rounded') state.cv.photoShape = 'square';
+        if(!['circle','square','rectangle'].includes(state.cv.photoShape)) state.cv.photoShape = 'circle';
       }catch(e){
         state.cv = defaultCV;
       }
