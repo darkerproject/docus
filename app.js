@@ -38,6 +38,11 @@ const DEFAULT_SECTIONS_GENERAL = {
   indications:false,
   observations:true
 };
+const DEFAULT_SECTIONS_CV = {
+  cv_certificados:false,
+  cv_pasatiempos:false,
+  cv_referencias:false
+};
 
 const DEFAULTS = {
   settings:{
@@ -59,7 +64,8 @@ const DEFAULTS = {
     cvSideText:'#e8e8e8',
     cvMainBg:'#ffffff',
     cvMainText:'#2c2c2c',
-    cvTitleColor:'#0e7c8e'
+    cvTitleColor:'#0e7c8e',
+    cvHabilidadesPos:'main'
   },
   catalog:[],
   cv:{
@@ -72,7 +78,10 @@ const DEFAULTS = {
     idiomas:[],
     experiencia:[],
     educacion:[],
-    habilidades:[]
+    habilidades:[],
+    certificados:[],
+    pasatiempos:'',
+    referencias:[]
   }
 };
 
@@ -107,7 +116,10 @@ let state = {
     idiomas:[],
     experiencia:[],
     educacion:[],
-    habilidades:[]
+    habilidades:[],
+    certificados:[],
+    pasatiempos:'',
+    referencias:[]
   }
 };
 
@@ -191,10 +203,12 @@ async function loadDataForSession(){
   const loaded = sRaw ? (()=>{ try{return JSON.parse(sRaw);}catch(e){return {};} })() : {};
   state.settings = {...DEFAULTS.settings, ...loaded};
 
-  // Apply default sections per template (merging with saved overrides) — only for cotizations
+  // Apply default sections per template (merging with saved overrides)
   if(state.template === 'lab' || state.template === 'general'){
     const tmplDefaults = state.template === 'general' ? DEFAULT_SECTIONS_GENERAL : DEFAULT_SECTIONS_LAB;
     state.settings.sections = {...tmplDefaults, ...(loaded.sections || {})};
+  }else if(state.template === 'cv'){
+    state.settings.sections = {...DEFAULT_SECTIONS_CV, ...(loaded.sections || {})};
   }
 
   const cRaw = await storageGet(dataKey('catalog'));
@@ -244,7 +258,10 @@ async function loadDataForSession(){
     idiomas:[],
     experiencia:[],
     educacion:[],
-    habilidades:[]
+    habilidades:[],
+    certificados:[],
+    pasatiempos:'',
+    referencias:[]
   };
   if(state.template === 'cv'){
     const cvRaw = await storageGet(dataKey('cv'));
@@ -720,10 +737,13 @@ function fillCVFormFromState(){
   $('#cv-phone').value = cv.contacto.phone || '';
   $('#cv-address').value = cv.contacto.address || '';
   $('#cv-website').value = cv.contacto.website || '';
+  $('#cv-pasatiempos').value = cv.pasatiempos || '';
   renderCVIdiomas();
   renderCVExperiencia();
   renderCVEducacion();
   renderCVHabilidades();
+  renderCVCertificados();
+  renderCVReferencias();
 }
 
 function renderCVIdiomas(){
@@ -875,9 +895,78 @@ function renderCVHabilidades(){
   });
 }
 
+function renderCVCertificados(){
+  const list = $('#cv-certificados-list');
+  if(!list) return;
+  list.innerHTML = '';
+  state.cv.certificados.forEach((it, i)=>{
+    const el = document.createElement('div');
+    el.className = 'exam-item';
+    el.innerHTML = `
+      <input data-f="nombre" placeholder="Nombre del curso o certificado" value="${escapeHTML(it.nombre||'')}" style="padding:9px 10px;font-size:13px;background:var(--bg-2);border:1px solid var(--line);border-radius:7px;width:100%">
+      <div class="exam-row">
+        <input data-f="institucion" placeholder="Institución" value="${escapeHTML(it.institucion||'')}">
+        <input data-f="fecha" placeholder="Fecha (ej. 2023)" value="${escapeHTML(it.fecha||'')}">
+      </div>
+      <textarea data-f="descripcion" placeholder="Detalles (opcional)" rows="2" style="padding:9px 10px;font-size:13px;background:var(--bg-2);border:1px solid var(--line);border-radius:7px;width:100%;font-family:inherit;resize:vertical">${escapeHTML(it.descripcion||'')}</textarea>
+      <div class="actions-row">
+        <button class="icon-btn" data-act="del" title="Eliminar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        </button>
+      </div>
+    `;
+    el.querySelectorAll('input, textarea').forEach(inp=>{
+      inp.addEventListener('input', e=>{
+        state.cv.certificados[i][e.target.dataset.f] = e.target.value;
+        renderPreview();
+      });
+    });
+    el.querySelector('[data-act="del"]').addEventListener('click', ()=>{
+      state.cv.certificados.splice(i,1);
+      renderCVCertificados(); renderPreview();
+    });
+    list.appendChild(el);
+  });
+}
+
+function renderCVReferencias(){
+  const list = $('#cv-referencias-list');
+  if(!list) return;
+  list.innerHTML = '';
+  state.cv.referencias.forEach((it, i)=>{
+    const el = document.createElement('div');
+    el.className = 'exam-item';
+    el.innerHTML = `
+      <input data-f="nombre" placeholder="Nombre" value="${escapeHTML(it.nombre||'')}" style="padding:9px 10px;font-size:13px;background:var(--bg-2);border:1px solid var(--line);border-radius:7px;width:100%">
+      <div class="exam-row">
+        <input data-f="empresa" placeholder="Empresa / cargo" value="${escapeHTML(it.empresa||'')}">
+        <input data-f="contacto" placeholder="Email o teléfono" value="${escapeHTML(it.contacto||'')}">
+      </div>
+      <div class="actions-row">
+        <button class="icon-btn" data-act="del" title="Eliminar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        </button>
+      </div>
+    `;
+    el.querySelectorAll('input').forEach(inp=>{
+      inp.addEventListener('input', e=>{
+        state.cv.referencias[i][e.target.dataset.f] = e.target.value;
+        renderPreview();
+      });
+    });
+    el.querySelector('[data-act="del"]').addEventListener('click', ()=>{
+      state.cv.referencias.splice(i,1);
+      renderCVReferencias(); renderPreview();
+    });
+    list.appendChild(el);
+  });
+}
+
 function renderCVPreview(){
   const cv = state.cv;
   const s = state.settings;
+  const sections = s.sections || {};
+  const habPos = s.cvHabilidadesPos || 'main';
   const doc = $('#preview-doc');
 
   // Apply color variables from settings
@@ -887,20 +976,34 @@ function renderCVPreview(){
   doc.style.setProperty('--cv-main-text', s.cvMainText || '#2c2c2c');
   doc.style.setProperty('--cv-title', s.cvTitleColor || '#0e7c8e');
 
+  // Build sidebar parts
+  const sidebarParts = [
+    cv.photoData ? `<div class="cv-photo shape-${cv.photoShape||'circle'}"><img src="${cv.photoData}" alt="Foto"></div>` : '',
+    renderCVPerfilHTML(cv),
+    renderCVContactoHTML(cv),
+    renderCVIdiomasHTML(cv),
+    habPos === 'sidebar' ? renderCVHabilidadesHTML(cv) : '',
+    sections.cv_referencias === true ? renderCVReferenciasHTML(cv) : ''
+  ];
+
+  // Build main parts
+  const mainParts = [
+    `<div class="cv-name">${escapeHTML(cv.name || 'Tu nombre')}</div>`,
+    `<div class="cv-role">${escapeHTML(cv.role || 'Tu cargo / profesión')}</div>`,
+    renderCVExperienciaHTML(cv),
+    renderCVEducacionHTML(cv),
+    habPos === 'main' ? renderCVHabilidadesHTML(cv) : '',
+    sections.cv_certificados === true ? renderCVCertificadosHTML(cv) : '',
+    sections.cv_pasatiempos === true ? renderCVPasatiemposHTML(cv) : ''
+  ];
+
   doc.innerHTML = `
     <div class="cv-doc">
       <aside class="cv-sidebar">
-        ${cv.photoData ? `<div class="cv-photo shape-${cv.photoShape||'circle'}"><img src="${cv.photoData}" alt="Foto"></div>` : ''}
-        ${renderCVPerfilHTML(cv)}
-        ${renderCVContactoHTML(cv)}
-        ${renderCVIdiomasHTML(cv)}
+        ${sidebarParts.filter(Boolean).join('')}
       </aside>
       <main class="cv-main">
-        <div class="cv-name">${escapeHTML(cv.name || 'Tu nombre')}</div>
-        <div class="cv-role">${escapeHTML(cv.role || 'Tu cargo / profesión')}</div>
-        ${renderCVExperienciaHTML(cv)}
-        ${renderCVEducacionHTML(cv)}
-        ${renderCVHabilidadesHTML(cv)}
+        ${mainParts.filter(Boolean).join('')}
       </main>
     </div>
   `;
@@ -1019,6 +1122,57 @@ function renderCVHabilidadesHTML(cv){
             </div>
           `;
         }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderCVCertificadosHTML(cv){
+  const items = (cv.certificados||[]).filter(c=>c.nombre || c.institucion);
+  if(!items.length) return '';
+  return `
+    <div class="cv-section">
+      <div class="cv-section-title">Certificados y Cursos</div>
+      ${items.map(c=>`
+        <div class="cv-cert-item">
+          <div class="cv-cert-side">
+            ${escapeHTML(c.institucion||'')}
+            ${c.fecha ? `<span class="cv-cert-period">${escapeHTML(c.fecha)}</span>` : ''}
+          </div>
+          <div>
+            <div class="cv-cert-title">${escapeHTML(c.nombre||'')}</div>
+            ${c.descripcion ? `<div class="cv-cert-desc">${escapeHTML(c.descripcion).replace(/\n/g,'<br>')}</div>` : ''}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderCVPasatiemposHTML(cv){
+  if(!cv.pasatiempos) return '';
+  return `
+    <div class="cv-section">
+      <div class="cv-section-title">Pasatiempos</div>
+      <div class="cv-pasatiempos-text">${escapeHTML(cv.pasatiempos).replace(/\n/g,'<br>')}</div>
+    </div>
+  `;
+}
+
+function renderCVReferenciasHTML(cv){
+  const items = (cv.referencias||[]).filter(r=>r.nombre || r.empresa || r.contacto);
+  if(!items.length) return '';
+  return `
+    <div class="cv-section">
+      <div class="cv-section-title">Referencias</div>
+      <div class="cv-referencias-stack">
+        ${items.map(r=>`
+          <div class="cv-ref-item">
+            ${r.nombre ? `<div class="cv-ref-name">${escapeHTML(r.nombre)}</div>` : ''}
+            ${r.empresa ? `<div class="cv-ref-meta">${escapeHTML(r.empresa)}</div>` : ''}
+            ${r.contacto ? `<div class="cv-ref-meta">${escapeHTML(r.contacto)}</div>` : ''}
+          </div>
+        `).join('')}
       </div>
     </div>
   `;
@@ -1296,6 +1450,47 @@ function renderSectionToggles(){
   });
 }
 
+function renderCVSectionToggles(){
+  const wrap = $('#cv-section-toggles');
+  if(!wrap) return;
+  const sections = state.settings.sections || (state.settings.sections = {});
+  const toggles = [
+    {key:'cv_certificados', label:'Certificados y Cursos', sub:'Sección con lista de certificados (área principal)'},
+    {key:'cv_pasatiempos',  label:'Pasatiempos',           sub:'Texto libre con tus intereses (área principal)'},
+    {key:'cv_referencias',  label:'Referencias',           sub:'Contactos profesionales (sidebar)'}
+  ];
+
+  wrap.innerHTML = toggles.map(t=>{
+    const on = sections[t.key] === true;
+    return `
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">${escapeHTML(t.label)}</div>
+          <div class="toggle-sub">${escapeHTML(t.sub)}</div>
+        </div>
+        <button class="toggle-switch ${on?'on':''}" data-toggle-key="${escapeHTML(t.key)}" type="button" aria-pressed="${on}"></button>
+      </div>
+    `;
+  }).join('');
+
+  wrap.querySelectorAll('.toggle-switch').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const key = btn.dataset.toggleKey;
+      const cur = sections[key] === true;
+      sections[key] = !cur;
+      btn.classList.toggle('on', !cur);
+      btn.setAttribute('aria-pressed', String(!cur));
+    });
+  });
+}
+
+function updateCVHabPosControl(){
+  const cur = state.settings.cvHabilidadesPos || 'main';
+  $$('#cv-hab-pos-control .seg-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.pos === cur);
+  });
+}
+
 /* =============================================================
    SETTINGS MODAL
 ============================================================= */
@@ -1325,6 +1520,8 @@ function openSettings(){
   $('#s-cv-title').value = s.cvTitleColor;   $('#s-cv-title-hex').textContent     = s.cvTitleColor.toUpperCase();
   updateCVPhotoPreview();
   updateCVShapeSelector();
+  renderCVSectionToggles();
+  updateCVHabPosControl();
 
   $('#settings-modal').classList.add('open');
 }
@@ -1623,6 +1820,31 @@ function wire(){
     state.cv.habilidades.push({nombre:'', nivel:3});
     renderCVHabilidades(); renderPreview();
   });
+  $('#cv-add-certificado').addEventListener('click', ()=>{
+    state.cv.certificados.push({nombre:'', institucion:'', fecha:'', descripcion:''});
+    renderCVCertificados(); renderPreview();
+  });
+  $('#cv-add-referencia').addEventListener('click', ()=>{
+    state.cv.referencias.push({nombre:'', empresa:'', contacto:''});
+    renderCVReferencias(); renderPreview();
+  });
+
+  // CV pasatiempos textarea
+  const pasaInput = $('#cv-pasatiempos');
+  if(pasaInput){
+    pasaInput.addEventListener('input', e=>{
+      state.cv.pasatiempos = e.target.value;
+      renderPreview();
+    });
+  }
+
+  // CV habilidades position selector (segmented control)
+  $$('#cv-hab-pos-control .seg-btn').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      state.settings.cvHabilidadesPos = b.dataset.pos;
+      updateCVHabPosControl();
+    });
+  });
 
   // download
   $('#download-pdf').addEventListener('click', downloadPDF);
@@ -1711,6 +1933,8 @@ function wire(){
     state.settings.cvMainBg    = $('#s-cv-main-bg').value;
     state.settings.cvMainText  = $('#s-cv-main-text').value;
     state.settings.cvTitleColor= $('#s-cv-title').value;
+    // cvHabilidadesPos already kept in state via seg-btn click; ensure it has a value
+    if(!state.settings.cvHabilidadesPos) state.settings.cvHabilidadesPos = 'main';
     // sections were updated in-place by toggle clicks; nothing more needed
     await saveSettings();
     // CV photo/shape live in state.cv → persist via persistQuote when in CV

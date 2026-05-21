@@ -193,6 +193,31 @@
         </button>
       </div>
 
+      <div class="section" data-tmpl-only="cv" data-section="cv_certificados">
+        <div class="section-title">Certificados y Cursos</div>
+        <div class="list" id="cv-certificados-list"></div>
+        <button class="add-btn" id="cv-add-certificado">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Agregar certificado
+        </button>
+      </div>
+
+      <div class="section" data-tmpl-only="cv" data-section="cv_pasatiempos">
+        <div class="section-title">Pasatiempos</div>
+        <div class="field">
+          <textarea id="cv-pasatiempos" rows="3" placeholder="Lectura, fotografía, senderismo, viajes…"></textarea>
+        </div>
+      </div>
+
+      <div class="section" data-tmpl-only="cv" data-section="cv_referencias">
+        <div class="section-title">Referencias</div>
+        <div class="list" id="cv-referencias-list"></div>
+        <button class="add-btn" id="cv-add-referencia">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Agregar referencia
+        </button>
+      </div>
+
     </div>
   </section>
 
@@ -382,6 +407,16 @@ Informar si el paciente está bajo tratamiento farmacológico."></textarea>
         </div>
         <div class="subsection-title" style="margin-top:14px">Paletas predefinidas CV</div>
         <div class="presets" id="cv-presets"></div>
+      </div>
+
+      <div data-tmpl-only="cv">
+        <div class="subsection-title">Secciones del documento</div>
+        <div class="section-toggles" id="cv-section-toggles"></div>
+        <div class="subsection-title" style="margin-top:14px">Posición de Habilidades</div>
+        <div class="seg-control" id="cv-hab-pos-control">
+          <button class="seg-btn" data-pos="main" type="button">Principal</button>
+          <button class="seg-btn" data-pos="sidebar" type="button">Sidebar</button>
+        </div>
       </div>
 
     </div>

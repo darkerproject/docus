@@ -608,6 +608,84 @@ details.catalog[open] summary::before{transform:rotate(90deg)}
   border-radius:3px;
 }
 
+/* Habilidades when placed in sidebar — single column, lighter bars, sidebar color */
+.cv-sidebar .cv-habilidades-grid{
+  grid-template-columns:1fr;
+  gap:7px;
+}
+.cv-sidebar .cv-habilidad-name{
+  color:var(--cv-side-text);
+  font-size:10px;
+}
+.cv-sidebar .cv-habilidad-bar{
+  background:rgba(255,255,255,.15);
+  height:4px;
+}
+
+/* Certificados (main area) — same general structure as educacion */
+.cv-cert-item{
+  display:grid;
+  grid-template-columns:130px 1fr;
+  gap:14px;
+  margin-bottom:14px;
+  font-size:10.5px;
+}
+.cv-cert-item:last-child{margin-bottom:0}
+.cv-cert-side{
+  color:var(--cv-main-text);
+  opacity:.7;
+  line-height:1.5;
+}
+.cv-cert-period{display:block;margin-top:2px;font-style:italic;font-size:10px}
+.cv-cert-title{font-weight:700;font-size:11.5px;color:var(--cv-main-text);margin-bottom:2px}
+.cv-cert-desc{color:var(--cv-main-text);opacity:.85;line-height:1.5}
+
+/* Pasatiempos (main area) — simple text block */
+.cv-pasatiempos-text{
+  font-size:11px;
+  line-height:1.6;
+  color:var(--cv-main-text);
+}
+
+/* Referencias (sidebar) — stacked items */
+.cv-referencias-stack{
+  display:flex;flex-direction:column;gap:10px;
+  font-size:10.5px;
+}
+.cv-ref-item{
+  color:var(--cv-side-text);
+  line-height:1.45;
+}
+.cv-ref-name{font-weight:700;font-size:11px;margin-bottom:2px}
+.cv-ref-meta{opacity:.85}
+
+/* Segmented control (for habilidades position selector) */
+.seg-control{
+  display:flex;
+  background:var(--bg-2);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:3px;
+  gap:3px;
+}
+.seg-btn{
+  flex:1;
+  padding:9px 12px;
+  border:none;background:transparent;
+  font-size:12px;font-weight:600;
+  color:var(--ink-3);
+  border-radius:7px;
+  cursor:pointer;
+  transition:all .15s ease;
+  font-family:inherit;
+}
+.seg-btn:hover{color:var(--ink-2)}
+.seg-btn.active{
+  background:#fff;
+  color:var(--ink);
+  box-shadow:var(--shadow-sm);
+}
+
 /* CV PDF mode: enforce A4 dimensions for export, similar to .doc-pdf-mode */
 .doc.doc-pdf-mode.cv-mode{
   width:794px !important;
