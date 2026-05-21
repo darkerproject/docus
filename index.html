@@ -217,7 +217,7 @@
     </div>
     <div class="modal-body">
 
-      <div>
+      <div data-tmpl-only="lab general">
         <div class="subsection-title">Información de la empresa</div>
         <div class="logo-uploader" style="margin-bottom:14px">
           <div class="logo-preview" id="logo-preview"><span class="ph">Logo</span></div>
@@ -253,7 +253,7 @@
         </div>
       </div>
 
-      <div>
+      <div data-tmpl-only="lab general">
         <div class="subsection-title">Paleta de colores (3)</div>
         <div class="swatches">
           <div class="swatch">
@@ -282,12 +282,12 @@
         <div class="presets" id="presets"></div>
       </div>
 
-      <div>
+      <div data-tmpl-only="lab general">
         <div class="subsection-title">Secciones del documento</div>
         <div class="section-toggles" id="section-toggles"></div>
       </div>
 
-      <div>
+      <div data-tmpl-only="lab general">
         <div class="subsection-title">Predeterminados</div>
         <div class="row" style="margin-bottom:10px">
           <div class="field">
@@ -308,6 +308,80 @@ Informar si el paciente está bajo tratamiento farmacológico."></textarea>
           <label>Observaciones predeterminadas</label>
           <textarea id="s-obs" rows="3" placeholder="La toma de muestra no está incluida en la presente cotización."></textarea>
         </div>
+      </div>
+
+      <!-- ============== CV-ONLY SETTINGS ============== -->
+      <div data-tmpl-only="cv">
+        <div class="subsection-title">Foto del CV</div>
+        <div class="logo-uploader" style="margin-bottom:14px">
+          <div class="logo-preview cv-photo-preview" id="cv-photo-preview"><span class="ph">Foto</span></div>
+          <div class="logo-actions">
+            <input type="file" id="cv-photo-input" accept="image/*" style="display:none">
+            <div class="logo-buttons">
+              <button class="btn btn-soft" id="cv-photo-btn">Subir foto</button>
+              <button class="btn-link" id="cv-photo-remove">Quitar</button>
+            </div>
+            <span class="hint">JPG o PNG, idealmente cuadrada y de buena calidad.</span>
+          </div>
+        </div>
+        <div class="subsection-title" style="margin-top:14px">Forma del marco</div>
+        <div class="shape-selector" id="cv-shape-selector">
+          <button class="shape-opt active" data-shape="circle" type="button">
+            <span class="shape-preview shape-preview-circle"></span>
+            <span class="shape-label">Círculo</span>
+          </button>
+          <button class="shape-opt" data-shape="rounded" type="button">
+            <span class="shape-preview shape-preview-rounded"></span>
+            <span class="shape-label">Redondeado</span>
+          </button>
+          <button class="shape-opt" data-shape="rectangle" type="button">
+            <span class="shape-preview shape-preview-rectangle"></span>
+            <span class="shape-label">Rectángulo</span>
+          </button>
+        </div>
+      </div>
+
+      <div data-tmpl-only="cv">
+        <div class="subsection-title">Paleta de colores CV</div>
+        <div class="cv-swatches">
+          <div class="swatch">
+            <span class="swatch-label">Sidebar fondo</span>
+            <div class="swatch-input">
+              <input type="color" id="s-cv-side-bg" value="#2c2c2c">
+              <span class="hex" id="s-cv-side-bg-hex">#2C2C2C</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <span class="swatch-label">Sidebar texto</span>
+            <div class="swatch-input">
+              <input type="color" id="s-cv-side-text" value="#e8e8e8">
+              <span class="hex" id="s-cv-side-text-hex">#E8E8E8</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <span class="swatch-label">Principal fondo</span>
+            <div class="swatch-input">
+              <input type="color" id="s-cv-main-bg" value="#ffffff">
+              <span class="hex" id="s-cv-main-bg-hex">#FFFFFF</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <span class="swatch-label">Principal texto</span>
+            <div class="swatch-input">
+              <input type="color" id="s-cv-main-text" value="#2c2c2c">
+              <span class="hex" id="s-cv-main-text-hex">#2C2C2C</span>
+            </div>
+          </div>
+          <div class="swatch">
+            <span class="swatch-label">Acento (títulos)</span>
+            <div class="swatch-input">
+              <input type="color" id="s-cv-title" value="#0e7c8e">
+              <span class="hex" id="s-cv-title-hex">#0E7C8E</span>
+            </div>
+          </div>
+        </div>
+        <div class="subsection-title" style="margin-top:14px">Paletas predefinidas CV</div>
+        <div class="presets" id="cv-presets"></div>
       </div>
 
     </div>

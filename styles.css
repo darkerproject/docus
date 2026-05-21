@@ -859,6 +859,62 @@ details.catalog[open] summary::before{transform:rotate(90deg)}
 .preset-bars span{flex:1}
 .preset-name{font-size:11px;font-weight:600;color:var(--ink-2)}
 
+/* ---------- CV photo preview (uses .logo-preview as base, override radius per shape) ---------- */
+.cv-photo-preview{border-radius:50%}
+.cv-photo-preview.shape-rounded{border-radius:14px}
+.cv-photo-preview.shape-rectangle{border-radius:6px}
+.cv-photo-preview img{width:100%;height:100%;object-fit:cover}
+
+/* ---------- Shape selector ---------- */
+.shape-selector{display:flex;gap:8px}
+.shape-opt{
+  flex:1;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:12px 8px;
+  border:1.5px solid var(--line);border-radius:10px;
+  background:var(--bg-2);cursor:pointer;
+  transition:all .15s ease;
+}
+.shape-opt:hover{border-color:var(--ink-2)}
+.shape-opt.active{
+  border-color:var(--ink);
+  background:#fff;
+  box-shadow:var(--shadow-sm);
+}
+.shape-preview{
+  width:38px;height:38px;
+  background:linear-gradient(135deg, #475569 0%, #1e293b 100%);
+  display:block;
+}
+.shape-preview-circle{border-radius:50%}
+.shape-preview-rounded{border-radius:8px}
+.shape-preview-rectangle{border-radius:2px}
+.shape-label{font-size:11px;font-weight:600;color:var(--ink-2)}
+.shape-opt.active .shape-label{color:var(--ink)}
+
+/* ---------- CV color swatches (5-up grid, 2 rows on desktop) ---------- */
+.cv-swatches{
+  display:grid;
+  grid-template-columns:repeat(5, 1fr);
+  gap:10px;
+  margin-bottom:14px;
+}
+@media (max-width: 720px){
+  .cv-swatches{grid-template-columns:repeat(2, 1fr)}
+}
+
+/* ---------- CV photo in preview (rendered inside sidebar) ---------- */
+.cv-photo{
+  width:160px;height:160px;
+  margin:0 auto 18px;
+  overflow:hidden;
+  background:#1a1a1a;
+}
+.cv-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.cv-photo.shape-circle{border-radius:50%}
+.cv-photo.shape-rounded{border-radius:22px}
+.cv-photo.shape-rectangle{border-radius:6px}
+
 /* ---------- Toast ---------- */
 .toast{
   position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);

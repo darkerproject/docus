@@ -10,6 +10,16 @@ const PRESETS = [
   {name:'Carbón', c1:'#1a1a1a', c2:'#525252', c3:'#f1f1f1'},
 ];
 
+const CV_PRESETS = [
+  {name:'Oscuro',  sideBg:'#2c2c2c', sideText:'#e8e8e8', mainBg:'#ffffff', mainText:'#2c2c2c', title:'#0e7c8e'},
+  {name:'Marino',  sideBg:'#1d3557', sideText:'#f1faee', mainBg:'#ffffff', mainText:'#1d3557', title:'#e63946'},
+  {name:'Pastel',  sideBg:'#f4d6cc', sideText:'#5a2a1f', mainBg:'#ffffff', mainText:'#3a2820', title:'#c2664a'},
+  {name:'Bosque',  sideBg:'#2d4a3e', sideText:'#e8f1ec', mainBg:'#ffffff', mainText:'#2c2c2c', title:'#5a8f7a'},
+  {name:'Carbón',  sideBg:'#1a1a1a', sideText:'#e8e8e8', mainBg:'#f5f5f5', mainText:'#1a1a1a', title:'#d4a017'},
+  {name:'Lavanda', sideBg:'#5b4b8a', sideText:'#f0ecfa', mainBg:'#ffffff', mainText:'#2c2440', title:'#9b86c4'},
+  {name:'Claro',   sideBg:'#f5f5f5', sideText:'#2c2c2c', mainBg:'#ffffff', mainText:'#2c2c2c', title:'#1a1a1a'},
+];
+
 const DEFAULT_SECTIONS_LAB = {
   patient_clinica:true,
   patient_tutor:true,
@@ -56,6 +66,8 @@ const DEFAULTS = {
     name:'',
     role:'',
     perfil:'',
+    photoData:'',
+    photoShape:'circle',
     contacto:{email:'',phone:'',address:'',website:''},
     idiomas:[],
     experiencia:[],
@@ -89,6 +101,8 @@ let state = {
     name:'',
     role:'',
     perfil:'',
+    photoData:'',
+    photoShape:'circle',
     contacto:{email:'',phone:'',address:'',website:''},
     idiomas:[],
     experiencia:[],
@@ -871,6 +885,7 @@ function renderCVPreview(){
   doc.innerHTML = `
     <div class="cv-doc">
       <aside class="cv-sidebar">
+        ${cv.photoData ? `<div class="cv-photo shape-${cv.photoShape||'circle'}"><img src="${cv.photoData}" alt="Foto"></div>` : ''}
         ${renderCVPerfilHTML(cv)}
         ${renderCVContactoHTML(cv)}
         ${renderCVIdiomasHTML(cv)}
@@ -1274,6 +1289,8 @@ function renderSectionToggles(){
 ============================================================= */
 function openSettings(){
   const s = state.settings;
+  const cv = state.cv;
+  // Lab/General fields (always populated; hidden by data-tmpl-only when not relevant)
   $('#s-name').value = s.name;
   $('#s-address').value = s.address;
   $('#s-phone').value = s.phone;
@@ -1287,6 +1304,16 @@ function openSettings(){
   $('#s-obs').value = s.obsDefaults;
   updateLogoPreview();
   renderSectionToggles();
+
+  // CV fields (populated regardless; hidden by data-tmpl-only when not in CV mode)
+  $('#s-cv-side-bg').value = s.cvSideBg;   $('#s-cv-side-bg-hex').textContent   = s.cvSideBg.toUpperCase();
+  $('#s-cv-side-text').value = s.cvSideText; $('#s-cv-side-text-hex').textContent = s.cvSideText.toUpperCase();
+  $('#s-cv-main-bg').value = s.cvMainBg;    $('#s-cv-main-bg-hex').textContent   = s.cvMainBg.toUpperCase();
+  $('#s-cv-main-text').value = s.cvMainText; $('#s-cv-main-text-hex').textContent = s.cvMainText.toUpperCase();
+  $('#s-cv-title').value = s.cvTitleColor;   $('#s-cv-title-hex').textContent     = s.cvTitleColor.toUpperCase();
+  updateCVPhotoPreview();
+  updateCVShapeSelector();
+
   $('#settings-modal').classList.add('open');
 }
 function closeSettings(){
@@ -1302,6 +1329,31 @@ function updateLogoPreview(){
     p.classList.remove('has-logo');
     p.innerHTML = '<span class="ph">Logo</span>';
   }
+}
+
+function updateCVPhotoPreview(){
+  const p = $('#cv-photo-preview');
+  if(!p) return;
+  // remove previous shape classes
+  p.classList.remove('shape-circle','shape-rounded','shape-rectangle');
+  const shape = state.cv.photoShape || 'circle';
+  p.classList.add('shape-'+shape);
+  if(state.cv.photoData){
+    p.classList.add('has-logo');
+    p.innerHTML = `<img src="${state.cv.photoData}" alt="Foto">`;
+  }else{
+    p.classList.remove('has-logo');
+    p.innerHTML = '<span class="ph">Foto</span>';
+  }
+}
+
+function updateCVShapeSelector(){
+  const cur = state.cv.photoShape || 'circle';
+  $$('#cv-shape-selector .shape-opt').forEach(b=>{
+    b.classList.toggle('active', b.dataset.shape === cur);
+  });
+  // also update photo preview shape
+  updateCVPhotoPreview();
 }
 
 function renderPresets(){
@@ -1322,6 +1374,32 @@ function renderPresets(){
       $('#s-c1').value = p.c1; $('#s-c1-hex').textContent = p.c1.toUpperCase();
       $('#s-c2').value = p.c2; $('#s-c2-hex').textContent = p.c2.toUpperCase();
       $('#s-c3').value = p.c3; $('#s-c3-hex').textContent = p.c3.toUpperCase();
+    });
+    wrap.appendChild(b);
+  });
+}
+
+function renderCVPresets(){
+  const wrap = $('#cv-presets');
+  if(!wrap) return;
+  wrap.innerHTML = '';
+  CV_PRESETS.forEach(p=>{
+    const b = document.createElement('button');
+    b.className = 'preset';
+    b.innerHTML = `
+      <div class="preset-bars">
+        <span style="background:${p.sideBg}"></span>
+        <span style="background:${p.title}"></span>
+        <span style="background:${p.mainBg};border:1px solid var(--line)"></span>
+      </div>
+      <span class="preset-name">${p.name}</span>
+    `;
+    b.addEventListener('click', ()=>{
+      $('#s-cv-side-bg').value   = p.sideBg;   $('#s-cv-side-bg-hex').textContent   = p.sideBg.toUpperCase();
+      $('#s-cv-side-text').value = p.sideText; $('#s-cv-side-text-hex').textContent = p.sideText.toUpperCase();
+      $('#s-cv-main-bg').value   = p.mainBg;   $('#s-cv-main-bg-hex').textContent   = p.mainBg.toUpperCase();
+      $('#s-cv-main-text').value = p.mainText; $('#s-cv-main-text-hex').textContent = p.mainText.toUpperCase();
+      $('#s-cv-title').value     = p.title;    $('#s-cv-title-hex').textContent     = p.title.toUpperCase();
     });
     wrap.appendChild(b);
   });
@@ -1561,15 +1639,49 @@ function wire(){
     updateLogoPreview();
   });
 
+  // CV photo upload
+  $('#cv-photo-btn').addEventListener('click', ()=>$('#cv-photo-input').click());
+  $('#cv-photo-input').addEventListener('change', e=>{
+    const f = e.target.files[0]; if(!f) return;
+    const r = new FileReader();
+    r.onload = ev => {
+      state.cv.photoData = ev.target.result;
+      updateCVPhotoPreview();
+    };
+    r.readAsDataURL(f);
+  });
+  $('#cv-photo-remove').addEventListener('click', ()=>{
+    state.cv.photoData = '';
+    updateCVPhotoPreview();
+  });
+
+  // CV shape selector
+  $$('#cv-shape-selector .shape-opt').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      state.cv.photoShape = b.dataset.shape;
+      updateCVShapeSelector();
+    });
+  });
+
   // color picker live hex display
   ['c1','c2','c3'].forEach(k=>{
     $('#s-'+k).addEventListener('input', e=>{
       $('#s-'+k+'-hex').textContent = e.target.value.toUpperCase();
     });
   });
+  // CV color pickers live hex display
+  ['cv-side-bg','cv-side-text','cv-main-bg','cv-main-text','cv-title'].forEach(k=>{
+    const el = $('#s-'+k);
+    if(el){
+      el.addEventListener('input', e=>{
+        $('#s-'+k+'-hex').textContent = e.target.value.toUpperCase();
+      });
+    }
+  });
 
   // save settings
   $('#save-settings').addEventListener('click', async ()=>{
+    // Lab/General settings
     state.settings.name = $('#s-name').value.trim();
     state.settings.address = $('#s-address').value.trim();
     state.settings.phone = $('#s-phone').value.trim();
@@ -1581,8 +1693,16 @@ function wire(){
     state.settings.taxLabel = ($('#s-tax-label').value || 'IGV').trim();
     state.settings.indDefaults = $('#s-ind').value;
     state.settings.obsDefaults = $('#s-obs').value;
+    // CV settings
+    state.settings.cvSideBg    = $('#s-cv-side-bg').value;
+    state.settings.cvSideText  = $('#s-cv-side-text').value;
+    state.settings.cvMainBg    = $('#s-cv-main-bg').value;
+    state.settings.cvMainText  = $('#s-cv-main-text').value;
+    state.settings.cvTitleColor= $('#s-cv-title').value;
     // sections were updated in-place by toggle clicks; nothing more needed
     await saveSettings();
+    // CV photo/shape live in state.cv → persist via persistQuote when in CV
+    if(state.template === 'cv'){ await persistQuote(); }
     applySectionVisibility();
     renderPreview();
     renderCatalog();
@@ -1928,6 +2048,7 @@ async function selectTemplate(tmpl){
   applyTemplateUI();
   fillFormFromState();
   renderPresets();
+  renderCVPresets();
   renderPreview();
   updateSessionPill();
 }
@@ -2024,6 +2145,7 @@ async function init(){
     applyTemplateUI();
     fillFormFromState();
     renderPresets();
+    renderCVPresets();
     renderPreview();
     updateSessionPill();
   }else{
