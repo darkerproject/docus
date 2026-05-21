@@ -413,6 +413,203 @@ details.catalog[open] summary::before{transform:rotate(90deg)}
   text-align:right;font-weight:800;font-size:14px;color:var(--c1);
 }
 
+/* ============== CV LAYOUT ==============
+   The .doc element becomes a 2-column layout when in CV mode.
+   Colors driven by CSS variables set per render from state.settings. */
+.doc.cv-mode{
+  --cv-side-bg:#2c2c2c;
+  --cv-side-text:#e8e8e8;
+  --cv-side-text-soft:rgba(255,255,255,.65);
+  --cv-main-bg:#ffffff;
+  --cv-main-text:#2c2c2c;
+  --cv-main-text-soft:#6b7280;
+  --cv-title:#0e7c8e;
+  padding:0;
+  font-size:10.5px;
+  line-height:1.55;
+  color:var(--cv-main-text);
+  background:var(--cv-main-bg);
+  overflow:hidden;
+}
+.cv-doc{
+  display:grid;
+  grid-template-columns:32% 68%;
+  width:100%;
+  min-height:100%;
+}
+.cv-sidebar{
+  background:var(--cv-side-bg);
+  color:var(--cv-side-text);
+  padding:42px 22px;
+}
+.cv-main{
+  background:var(--cv-main-bg);
+  color:var(--cv-main-text);
+  padding:42px 32px;
+}
+.cv-name{
+  font-family:'Fraunces',serif;
+  font-size:26px;
+  font-weight:600;
+  line-height:1.1;
+  letter-spacing:-.01em;
+  margin-bottom:4px;
+  color:var(--cv-main-text);
+}
+.cv-role{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  color:var(--cv-main-text-soft);
+  margin-bottom:24px;
+  font-weight:600;
+}
+.cv-section{
+  margin-bottom:22px;
+}
+.cv-section:last-child{margin-bottom:0}
+.cv-section-title{
+  font-size:11px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.16em;
+  margin-bottom:10px;
+  padding-bottom:5px;
+  border-bottom:1px solid currentColor;
+  opacity:.95;
+}
+.cv-main .cv-section-title{
+  color:var(--cv-title);
+  border-bottom-color:var(--cv-title);
+}
+.cv-sidebar .cv-section-title{
+  color:var(--cv-side-text);
+  border-bottom-color:rgba(255,255,255,.18);
+}
+.cv-perfil-text{
+  font-size:10.5px;
+  line-height:1.6;
+}
+.cv-contact-list{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  font-size:10.5px;
+  word-break:break-word;
+}
+.cv-contact-row{
+  display:flex;
+  gap:6px;
+  align-items:flex-start;
+  color:var(--cv-side-text);
+}
+.cv-contact-label{
+  font-weight:600;
+  min-width:62px;
+  opacity:.85;
+}
+.cv-list-stack{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  font-size:10.5px;
+}
+.cv-idioma-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  gap:8px;
+}
+.cv-idioma-name{font-weight:600}
+.cv-idioma-level{
+  font-size:9.5px;
+  opacity:.75;
+  letter-spacing:.04em;
+}
+.cv-exp-item, .cv-edu-item{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:0 20px;
+  margin-bottom:14px;
+}
+.cv-exp-item:last-child, .cv-edu-item:last-child{margin-bottom:0}
+.cv-exp-side, .cv-edu-side{
+  font-size:9.5px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--cv-title);
+  min-width:80px;
+  max-width:100px;
+  line-height:1.4;
+  padding-top:2px;
+}
+.cv-exp-side .cv-period, .cv-edu-side .cv-period{
+  display:block;
+  font-weight:400;
+  font-size:9px;
+  color:var(--cv-main-text-soft);
+  margin-top:4px;
+  letter-spacing:.02em;
+  text-transform:none;
+}
+.cv-exp-body, .cv-edu-body{
+  padding-top:1px;
+}
+.cv-exp-title, .cv-edu-title{
+  font-weight:700;
+  font-size:11.5px;
+  color:var(--cv-main-text);
+  margin-bottom:4px;
+  line-height:1.3;
+}
+.cv-exp-desc, .cv-edu-desc{
+  font-size:10.5px;
+  line-height:1.55;
+  color:var(--cv-main-text-soft);
+}
+.cv-habilidades-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px 24px;
+}
+.cv-habilidad-item{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.cv-habilidad-name{
+  font-size:10.5px;
+  font-weight:600;
+  color:var(--cv-main-text);
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+.cv-habilidad-bar{
+  height:5px;
+  background:rgba(0,0,0,.08);
+  border-radius:3px;
+  overflow:hidden;
+}
+.cv-habilidad-fill{
+  height:100%;
+  background:var(--cv-title);
+  border-radius:3px;
+}
+
+/* CV PDF mode: enforce A4 dimensions for export, similar to .doc-pdf-mode */
+.doc.doc-pdf-mode.cv-mode{
+  width:794px !important;
+  min-height:1123px !important;
+  padding:0 !important;
+}
+.doc.doc-pdf-mode.cv-mode .cv-sidebar{
+  padding:50px 26px !important;
+}
+.doc.doc-pdf-mode.cv-mode .cv-main{
+  padding:50px 38px !important;
+}
+
 /* PDF capture mode: force desktop A4 layout regardless of viewport.
    The visible preview uses responsive CSS, but for PDF export we clone the doc,
    apply this class, and capture the clone — guaranteeing the same layout as desktop. */

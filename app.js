@@ -43,9 +43,25 @@ const DEFAULTS = {
     taxLabel:'IGV',
     indDefaults:'',
     obsDefaults:'',
-    sections:{}  // populated per template on load
+    sections:{},  // populated per template on load
+    // CV-specific (only used when template === 'cv')
+    cvSideBg:'#2c2c2c',
+    cvSideText:'#e8e8e8',
+    cvMainBg:'#ffffff',
+    cvMainText:'#2c2c2c',
+    cvTitleColor:'#0e7c8e'
   },
-  catalog:[]
+  catalog:[],
+  cv:{
+    name:'',
+    role:'',
+    perfil:'',
+    contacto:{email:'',phone:'',address:'',website:''},
+    idiomas:[],
+    experiencia:[],
+    educacion:[],
+    habilidades:[]
+  }
 };
 
 let state = {
@@ -68,6 +84,16 @@ let state = {
     paid:{enabled:false, amount:0},
     indications:[],
     observations:''
+  },
+  cv:{
+    name:'',
+    role:'',
+    perfil:'',
+    contacto:{email:'',phone:'',address:'',website:''},
+    idiomas:[],
+    experiencia:[],
+    educacion:[],
+    habilidades:[]
   }
 };
 
@@ -151,15 +177,17 @@ async function loadDataForSession(){
   const loaded = sRaw ? (()=>{ try{return JSON.parse(sRaw);}catch(e){return {};} })() : {};
   state.settings = {...DEFAULTS.settings, ...loaded};
 
-  // Apply default sections per template (merging with saved overrides)
-  const tmplDefaults = state.template === 'general' ? DEFAULT_SECTIONS_GENERAL : DEFAULT_SECTIONS_LAB;
-  state.settings.sections = {...tmplDefaults, ...(loaded.sections || {})};
+  // Apply default sections per template (merging with saved overrides) — only for cotizations
+  if(state.template === 'lab' || state.template === 'general'){
+    const tmplDefaults = state.template === 'general' ? DEFAULT_SECTIONS_GENERAL : DEFAULT_SECTIONS_LAB;
+    state.settings.sections = {...tmplDefaults, ...(loaded.sections || {})};
+  }
 
   const cRaw = await storageGet(dataKey('catalog'));
   try{ state.catalog = cRaw ? JSON.parse(cRaw) : []; }
   catch(e){ state.catalog = []; }
 
-  // Defaults for the quote
+  // Defaults for the quote (cotizations)
   const defaultQuote = {
     number:'',
     date:new Date().toISOString().slice(0,10),
@@ -190,12 +218,43 @@ async function loadDataForSession(){
   }else{
     state.quote = defaultQuote;
   }
+
+  // CV data (only used when template === 'cv')
+  const defaultCV = {
+    name:'',
+    role:'',
+    perfil:'',
+    contacto:{email:'',phone:'',address:'',website:''},
+    idiomas:[],
+    experiencia:[],
+    educacion:[],
+    habilidades:[]
+  };
+  if(state.template === 'cv'){
+    const cvRaw = await storageGet(dataKey('cv'));
+    if(cvRaw){
+      try{
+        const saved = JSON.parse(cvRaw);
+        state.cv = {...defaultCV, ...saved, contacto:{...defaultCV.contacto, ...(saved.contacto||{})}};
+      }catch(e){
+        state.cv = defaultCV;
+      }
+    }else{
+      state.cv = defaultCV;
+    }
+  }else{
+    state.cv = defaultCV;
+  }
 }
 
 async function persistQuote(){
   if(!state.account || !state.template) return;
   try{
-    await storageSet(dataKey('quote'), JSON.stringify(state.quote));
+    if(state.template === 'cv'){
+      await storageSet(dataKey('cv'), JSON.stringify(state.cv));
+    }else{
+      await storageSet(dataKey('quote'), JSON.stringify(state.quote));
+    }
   }catch(e){
     // silent: storage may fail (quota, etc), but app keeps running with state in memory
   }
@@ -255,6 +314,10 @@ function showToast(msg, isError){
    FORM RENDER
 ============================================================= */
 function fillFormFromState(){
+  if(state.template === 'cv'){
+    fillCVFormFromState();
+    return;
+  }
   $('#f-number').value = state.quote.number;
   $('#f-date').value = state.quote.date;
   $('#f-validity').value = state.quote.validity;
@@ -626,9 +689,325 @@ function renderPaidControl(){
 /* =============================================================
    PREVIEW RENDER
 ============================================================= */
-function renderPreview(){
-  const s = state.settings, q = state.quote;
+/* =============================================================
+   CV — Form lists, preview and helpers
+============================================================= */
+function fillCVFormFromState(){
+  const cv = state.cv;
+  $('#cv-name').value = cv.name || '';
+  $('#cv-role').value = cv.role || '';
+  $('#cv-perfil').value = cv.perfil || '';
+  $('#cv-email').value = cv.contacto.email || '';
+  $('#cv-phone').value = cv.contacto.phone || '';
+  $('#cv-address').value = cv.contacto.address || '';
+  $('#cv-website').value = cv.contacto.website || '';
+  renderCVIdiomas();
+  renderCVExperiencia();
+  renderCVEducacion();
+  renderCVHabilidades();
+}
+
+function renderCVIdiomas(){
+  const list = $('#cv-idiomas-list');
+  if(!list) return;
+  list.innerHTML = '';
+  state.cv.idiomas.forEach((it, i)=>{
+    const el = document.createElement('div');
+    el.className = 'exam-item';
+    el.innerHTML = `
+      <div class="exam-row">
+        <input data-f="name" placeholder="Idioma (Español, Inglés…)" value="${escapeHTML(it.name||'')}">
+        <select data-f="level">
+          <option value="">Nivel</option>
+          <option ${it.level==='Nativo'?'selected':''}>Nativo</option>
+          <option ${it.level==='Avanzado'?'selected':''}>Avanzado</option>
+          <option ${it.level==='Intermedio'?'selected':''}>Intermedio</option>
+          <option ${it.level==='Básico'?'selected':''}>Básico</option>
+        </select>
+      </div>
+      <div class="actions-row">
+        <button class="icon-btn" data-act="del" title="Eliminar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        </button>
+      </div>
+    `;
+    el.querySelectorAll('input, select').forEach(inp=>{
+      const handler = e=>{
+        state.cv.idiomas[i][e.target.dataset.f] = e.target.value;
+        renderPreview();
+      };
+      inp.addEventListener('input', handler);
+      inp.addEventListener('change', handler);
+    });
+    el.querySelector('[data-act="del"]').addEventListener('click', ()=>{
+      state.cv.idiomas.splice(i,1);
+      renderCVIdiomas(); renderPreview();
+    });
+    list.appendChild(el);
+  });
+}
+
+function renderCVExperiencia(){
+  const list = $('#cv-experiencia-list');
+  if(!list) return;
+  list.innerHTML = '';
+  state.cv.experiencia.forEach((it, i)=>{
+    const el = document.createElement('div');
+    el.className = 'exam-item';
+    el.innerHTML = `
+      <input data-f="puesto" placeholder="Puesto / Cargo" value="${escapeHTML(it.puesto||'')}" style="padding:9px 10px;font-size:13px;background:var(--bg-2);border:1px solid var(--line);border-radius:7px;width:100%">
+      <div class="exam-row">
+        <input data-f="empresa" placeholder="Empresa" value="${escapeHTML(it.empresa||'')}">
+        <input data-f="periodo" placeholder="Ene 2020 - Dic 2022" value="${escapeHTML(it.periodo||'')}">
+      </div>
+      <textarea data-f="descripcion" placeholder="Descripción de tu rol y logros" rows="3" style="padding:9px 10px;font-size:13px;background:var(--bg-2);border:1px solid var(--line);border-radius:7px;width:100%;font-family:inherit;resize:vertical">${escapeHTML(it.descripcion||'')}</textarea>
+      <div class="actions-row">
+        <button class="icon-btn" data-act="del" title="Eliminar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        </button>
+      </div>
+    `;
+    el.querySelectorAll('input, textarea').forEach(inp=>{
+      inp.addEventListener('input', e=>{
+        state.cv.experiencia[i][e.target.dataset.f] = e.target.value;
+        renderPreview();
+      });
+    });
+    el.querySelector('[data-act="del"]').addEventListener('click', ()=>{
+      state.cv.experiencia.splice(i,1);
+      renderCVExperiencia(); renderPreview();
+    });
+    list.appendChild(el);
+  });
+}
+
+function renderCVEducacion(){
+  const list = $('#cv-educacion-list');
+  if(!list) return;
+  list.innerHTML = '';
+  state.cv.educacion.forEach((it, i)=>{
+    const el = document.createElement('div');
+    el.className = 'exam-item';
+    el.innerHTML = `
+      <input data-f="titulo" placeholder="Título / grado" value="${escapeHTML(it.titulo||'')}" style="padding:9px 10px;font-size:13px;background:var(--bg-2);border:1px solid var(--line);border-radius:7px;width:100%">
+      <div class="exam-row">
+        <input data-f="institucion" placeholder="Institución" value="${escapeHTML(it.institucion||'')}">
+        <input data-f="periodo" placeholder="2018 - 2022" value="${escapeHTML(it.periodo||'')}">
+      </div>
+      <textarea data-f="descripcion" placeholder="Detalles (opcional)" rows="2" style="padding:9px 10px;font-size:13px;background:var(--bg-2);border:1px solid var(--line);border-radius:7px;width:100%;font-family:inherit;resize:vertical">${escapeHTML(it.descripcion||'')}</textarea>
+      <div class="actions-row">
+        <button class="icon-btn" data-act="del" title="Eliminar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        </button>
+      </div>
+    `;
+    el.querySelectorAll('input, textarea').forEach(inp=>{
+      inp.addEventListener('input', e=>{
+        state.cv.educacion[i][e.target.dataset.f] = e.target.value;
+        renderPreview();
+      });
+    });
+    el.querySelector('[data-act="del"]').addEventListener('click', ()=>{
+      state.cv.educacion.splice(i,1);
+      renderCVEducacion(); renderPreview();
+    });
+    list.appendChild(el);
+  });
+}
+
+function renderCVHabilidades(){
+  const list = $('#cv-habilidades-list');
+  if(!list) return;
+  list.innerHTML = '';
+  state.cv.habilidades.forEach((it, i)=>{
+    const el = document.createElement('div');
+    el.className = 'exam-item';
+    el.innerHTML = `
+      <div class="exam-row" style="grid-template-columns:1fr 110px">
+        <input data-f="nombre" placeholder="Habilidad (ej. Photoshop)" value="${escapeHTML(it.nombre||'')}">
+        <select data-f="nivel">
+          <option value="1" ${(it.nivel||3)==1?'selected':''}>Básico</option>
+          <option value="2" ${(it.nivel||3)==2?'selected':''}>Inicial</option>
+          <option value="3" ${(it.nivel||3)==3?'selected':''}>Intermedio</option>
+          <option value="4" ${(it.nivel||3)==4?'selected':''}>Avanzado</option>
+          <option value="5" ${(it.nivel||3)==5?'selected':''}>Experto</option>
+        </select>
+      </div>
+      <div class="actions-row">
+        <button class="icon-btn" data-act="del" title="Eliminar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        </button>
+      </div>
+    `;
+    el.querySelectorAll('input, select').forEach(inp=>{
+      const handler = e=>{
+        const f = e.target.dataset.f;
+        state.cv.habilidades[i][f] = (f === 'nivel') ? parseInt(e.target.value, 10) : e.target.value;
+        renderPreview();
+      };
+      inp.addEventListener('input', handler);
+      inp.addEventListener('change', handler);
+    });
+    el.querySelector('[data-act="del"]').addEventListener('click', ()=>{
+      state.cv.habilidades.splice(i,1);
+      renderCVHabilidades(); renderPreview();
+    });
+    list.appendChild(el);
+  });
+}
+
+function renderCVPreview(){
+  const cv = state.cv;
+  const s = state.settings;
   const doc = $('#preview-doc');
+
+  // Apply color variables from settings
+  doc.style.setProperty('--cv-side-bg', s.cvSideBg || '#2c2c2c');
+  doc.style.setProperty('--cv-side-text', s.cvSideText || '#e8e8e8');
+  doc.style.setProperty('--cv-main-bg', s.cvMainBg || '#ffffff');
+  doc.style.setProperty('--cv-main-text', s.cvMainText || '#2c2c2c');
+  doc.style.setProperty('--cv-title', s.cvTitleColor || '#0e7c8e');
+
+  doc.innerHTML = `
+    <div class="cv-doc">
+      <aside class="cv-sidebar">
+        ${renderCVPerfilHTML(cv)}
+        ${renderCVContactoHTML(cv)}
+        ${renderCVIdiomasHTML(cv)}
+      </aside>
+      <main class="cv-main">
+        <div class="cv-name">${escapeHTML(cv.name || 'Tu nombre')}</div>
+        <div class="cv-role">${escapeHTML(cv.role || 'Tu cargo / profesión')}</div>
+        ${renderCVExperienciaHTML(cv)}
+        ${renderCVEducacionHTML(cv)}
+        ${renderCVHabilidadesHTML(cv)}
+      </main>
+    </div>
+  `;
+}
+
+function renderCVPerfilHTML(cv){
+  if(!cv.perfil) return '';
+  return `
+    <div class="cv-section">
+      <div class="cv-section-title">Perfil</div>
+      <div class="cv-perfil-text">${escapeHTML(cv.perfil).replace(/\n/g,'<br>')}</div>
+    </div>
+  `;
+}
+
+function renderCVContactoHTML(cv){
+  const c = cv.contacto || {};
+  const items = [];
+  if(c.email) items.push({label:'Email', value:c.email});
+  if(c.phone) items.push({label:'Teléfono', value:c.phone});
+  if(c.address) items.push({label:'Dirección', value:c.address});
+  if(c.website) items.push({label:'Website', value:c.website});
+  if(!items.length) return '';
+  return `
+    <div class="cv-section">
+      <div class="cv-section-title">Contacto</div>
+      <div class="cv-contact-list">
+        ${items.map(it=>`<div class="cv-contact-row"><span class="cv-contact-label">${escapeHTML(it.label)}</span><span>${escapeHTML(it.value)}</span></div>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderCVIdiomasHTML(cv){
+  const items = (cv.idiomas||[]).filter(i=>i.name);
+  if(!items.length) return '';
+  return `
+    <div class="cv-section">
+      <div class="cv-section-title">Idiomas</div>
+      <div class="cv-list-stack">
+        ${items.map(i=>`
+          <div class="cv-idioma-row">
+            <span class="cv-idioma-name">${escapeHTML(i.name)}</span>
+            <span class="cv-idioma-level">${escapeHTML(i.level||'')}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderCVExperienciaHTML(cv){
+  const items = (cv.experiencia||[]).filter(e=>e.puesto || e.empresa);
+  if(!items.length) return '';
+  return `
+    <div class="cv-section">
+      <div class="cv-section-title">Experiencia profesional</div>
+      ${items.map(e=>`
+        <div class="cv-exp-item">
+          <div class="cv-exp-side">
+            ${escapeHTML(e.empresa||'')}
+            ${e.periodo ? `<span class="cv-period">${escapeHTML(e.periodo)}</span>` : ''}
+          </div>
+          <div class="cv-exp-body">
+            <div class="cv-exp-title">${escapeHTML(e.puesto||'')}</div>
+            ${e.descripcion ? `<div class="cv-exp-desc">${escapeHTML(e.descripcion).replace(/\n/g,'<br>')}</div>` : ''}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderCVEducacionHTML(cv){
+  const items = (cv.educacion||[]).filter(e=>e.titulo || e.institucion);
+  if(!items.length) return '';
+  return `
+    <div class="cv-section">
+      <div class="cv-section-title">Educación</div>
+      ${items.map(e=>`
+        <div class="cv-edu-item">
+          <div class="cv-edu-side">
+            ${escapeHTML(e.institucion||'')}
+            ${e.periodo ? `<span class="cv-period">${escapeHTML(e.periodo)}</span>` : ''}
+          </div>
+          <div class="cv-edu-body">
+            <div class="cv-edu-title">${escapeHTML(e.titulo||'')}</div>
+            ${e.descripcion ? `<div class="cv-edu-desc">${escapeHTML(e.descripcion).replace(/\n/g,'<br>')}</div>` : ''}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function renderCVHabilidadesHTML(cv){
+  const items = (cv.habilidades||[]).filter(h=>h.nombre);
+  if(!items.length) return '';
+  return `
+    <div class="cv-section">
+      <div class="cv-section-title">Habilidades</div>
+      <div class="cv-habilidades-grid">
+        ${items.map(h=>{
+          const pct = Math.min(100, Math.max(0, ((h.nivel||3)/5)*100));
+          return `
+            <div class="cv-habilidad-item">
+              <div class="cv-habilidad-name">${escapeHTML(h.nombre)}</div>
+              <div class="cv-habilidad-bar"><div class="cv-habilidad-fill" style="width:${pct}%"></div></div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderPreview(){
+  const doc = $('#preview-doc');
+  // Branch CV: a completely different 2-column layout
+  if(state.template === 'cv'){
+    doc.classList.add('cv-mode');
+    renderCVPreview();
+    return;
+  }
+  doc.classList.remove('cv-mode');
+
+  const s = state.settings, q = state.quote;
 
   // Set CSS vars on doc
   doc.style.setProperty('--c1', s.c1);
@@ -1030,15 +1409,16 @@ async function downloadPDF(){
       heightLeft -= pageHeight;
     }
 
-    const customerName = state.template === 'general'
-      ? state.quote.clientNombre
-      : state.quote.paciente;
+    const customerName = state.template === 'cv'
+      ? state.cv.name
+      : (state.template === 'general' ? state.quote.clientNombre : state.quote.paciente);
     const cleaned = (customerName || '').trim()
       .replace(/[^a-z0-9]+/gi, '-')
       .replace(/^-+|-+$/g, '')
       .toLowerCase();
     const safe = cleaned || 'noname';
-    const fname = `cotizacion-${safe}-${state.quote.date}.pdf`;
+    const docType = state.template === 'cv' ? 'cv' : 'cotizacion';
+    const fname = `${docType}-${safe}-${new Date().toISOString().slice(0,10)}.pdf`;
     pdf.save(fname);
     showToast('PDF descargado');
   }catch(e){
@@ -1102,6 +1482,56 @@ function wire(){
   $('#add-ind').addEventListener('click', ()=>{
     state.quote.indications.push('');
     renderIndications(); renderPreview();
+  });
+
+  // ========== CV form bindings ==========
+  // Simple fields
+  const cvSimpleBind = [
+    ['#cv-name','name'],
+    ['#cv-role','role'],
+    ['#cv-perfil','perfil']
+  ];
+  cvSimpleBind.forEach(([sel,key])=>{
+    const el = $(sel);
+    if(el){
+      el.addEventListener('input', e=>{
+        state.cv[key] = e.target.value;
+        renderPreview();
+      });
+    }
+  });
+  // Contact fields (nested)
+  const cvContactBind = [
+    ['#cv-email','email'],
+    ['#cv-phone','phone'],
+    ['#cv-address','address'],
+    ['#cv-website','website']
+  ];
+  cvContactBind.forEach(([sel,key])=>{
+    const el = $(sel);
+    if(el){
+      el.addEventListener('input', e=>{
+        state.cv.contacto[key] = e.target.value;
+        renderPreview();
+      });
+    }
+  });
+  // Add buttons
+  $('#cv-add-idioma').addEventListener('click', ()=>{
+    state.cv.idiomas.push({name:'', level:''});
+    renderCVIdiomas(); renderPreview();
+  });
+  $('#cv-add-experiencia').addEventListener('click', ()=>{
+    state.cv.experiencia.push({puesto:'', empresa:'', periodo:'', descripcion:''});
+    renderCVExperiencia(); renderPreview();
+  });
+  $('#cv-add-educacion').addEventListener('click', ()=>{
+    state.cv.educacion.push({titulo:'', institucion:'', periodo:'', descripcion:''});
+    renderCVEducacion(); renderPreview();
+  });
+  $('#cv-add-habilidad').addEventListener('click', ()=>{
+    state.cv.habilidades.push({nombre:'', nivel:3});
+    renderCVHabilidades(); renderPreview();
   });
 
   // download
@@ -1204,13 +1634,16 @@ function wire(){
     showLoginStateList();
   });
 
-  // Doctype selector: Cotización goes to template selector; CV is disabled
+  // Doctype selector: Cotización → template selector (Lab/General).
+  // CV → directly into the CV editor (no sub-template).
   $$('#doctype-overlay .template-card').forEach(card=>{
-    card.addEventListener('click', ()=>{
+    card.addEventListener('click', async ()=>{
       if(card.classList.contains('disabled')) return;
       const doctype = card.dataset.doctype;
       if(doctype === 'cotizacion'){
         showTemplateSelector();
+      }else if(doctype === 'cv'){
+        await selectTemplate('cv');
       }
     });
   });
@@ -1246,12 +1679,18 @@ function wire(){
     showLogin();
   });
 
-  // Session pill in header → back to template selector (Lab/General).
-  // Persists current quote first so it can be restored on return.
+  // Session pill in header → back to selector.
+  // In CV mode: back to doctype (since CV has no sub-template).
+  // In Lab/General: back to template selector.
+  // Persists current data first so it can be restored on return.
   $('#session-pill').addEventListener('click', async ()=>{
     if(!state.account) return;
     await persistQuote();
-    showTemplateSelector();
+    if(state.template === 'cv'){
+      showDocTypeSelector();
+    }else{
+      showTemplateSelector();
+    }
   });
 
   // Logout button at the bottom of Configuración
@@ -1471,7 +1910,7 @@ function showTemplateSelector(){
 }
 
 async function selectTemplate(tmpl){
-  if(tmpl !== 'lab' && tmpl !== 'general'){ return; }
+  if(tmpl !== 'lab' && tmpl !== 'general' && tmpl !== 'cv'){ return; }
   state.template = tmpl;
   const acc = state.accounts.find(a=>a.slug===state.account);
   if(acc){
@@ -1497,12 +1936,13 @@ function applyTemplateUI(){
   const tmpl = state.template;
   // Show/hide form sections by template (form-only attribute, not the template cards in the selector)
   document.querySelectorAll('[data-tmpl-only]').forEach(el=>{
-    el.style.display = (el.dataset.tmplOnly === tmpl) ? '' : 'none';
+    const allowed = el.dataset.tmplOnly.split(/\s+/).filter(Boolean);
+    el.style.display = allowed.includes(tmpl) ? '' : 'none';
   });
   // Update header brand suffix
   const brandTag = $('#brand-tmpl-tag');
   if(brandTag){
-    brandTag.textContent = tmpl === 'general' ? '· General' : (tmpl === 'lab' ? '· Lab' : '');
+    brandTag.textContent = tmpl === 'general' ? '· General' : (tmpl === 'lab' ? '· Lab' : (tmpl === 'cv' ? '· CV' : ''));
   }
   // Update dynamic titles & button labels
   const itemsTitle = $('#items-title');
@@ -1537,7 +1977,7 @@ function updateSessionPill(){
     pill.classList.remove('show');
     return;
   }
-  const tmplName = state.template === 'lab' ? 'Lab' : 'General';
+  const tmplName = state.template === 'lab' ? 'Lab' : (state.template === 'general' ? 'General' : (state.template === 'cv' ? 'CV' : ''));
   pill.innerHTML = `
     <span class="sp-text">${escapeHTML(state.accountName)}</span>
     <span class="sp-sep">·</span>

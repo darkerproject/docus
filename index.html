@@ -42,7 +42,7 @@
   <section class="form-panel active" data-tab-panel="form">
     <div class="form-inner">
 
-      <div class="section">
+      <div class="section" data-tmpl-only="lab general">
         <div class="section-title">Cotización <span class="badge">Datos generales</span></div>
         <div class="row" style="margin-bottom:12px">
           <div class="field">
@@ -93,7 +93,7 @@
         <div class="field" data-section="service_address" style="margin-top:12px"><label>Dirección del servicio</label><input id="c-service-address" placeholder="Dirección o lugar del evento"></div>
       </div>
 
-      <div class="section">
+      <div class="section" data-tmpl-only="lab general">
         <div class="section-title" id="items-title">Exámenes solicitados</div>
         <div class="list" id="exams-list"></div>
         <button class="add-btn" id="add-exam">
@@ -106,7 +106,7 @@
         </details>
       </div>
 
-      <div class="section">
+      <div class="section" data-tmpl-only="lab general">
         <div class="section-title">Resumen de costos</div>
         <div class="totals-controls">
           <div class="totals-control" id="ctrl-discount"></div>
@@ -115,7 +115,7 @@
         </div>
       </div>
 
-      <div class="section" data-section="indications">
+      <div class="section" data-section="indications" data-tmpl-only="lab general">
         <div class="section-title" id="indications-title">Indicaciones previas</div>
         <div class="list" id="ind-list"></div>
         <button class="add-btn" id="add-ind">
@@ -124,11 +124,73 @@
         </button>
       </div>
 
-      <div class="section" data-section="observations">
+      <div class="section" data-section="observations" data-tmpl-only="lab general">
         <div class="section-title">Observaciones</div>
         <div class="field">
           <textarea id="obs" rows="4" placeholder="Notas, aclaraciones, alcance del servicio…"></textarea>
         </div>
+      </div>
+
+      <!-- ============== CV SECTIONS ============== -->
+      <div class="section" data-tmpl-only="cv">
+        <div class="section-title">Datos personales <span class="badge">CV</span></div>
+        <div class="fields-auto">
+          <div class="field"><label>Nombre completo</label><input id="cv-name" placeholder="Ej. Elena Rodríguez"></div>
+          <div class="field"><label>Cargo / Rol</label><input id="cv-role" placeholder="Ej. Graphic Designer"></div>
+        </div>
+      </div>
+
+      <div class="section" data-tmpl-only="cv">
+        <div class="section-title">Perfil</div>
+        <div class="field">
+          <textarea id="cv-perfil" rows="4" placeholder="Bio corta. Tu propuesta de valor en 2-3 oraciones."></textarea>
+        </div>
+      </div>
+
+      <div class="section" data-tmpl-only="cv">
+        <div class="section-title">Contacto</div>
+        <div class="fields-auto">
+          <div class="field"><label>Email</label><input id="cv-email" placeholder="tu@email.com" type="email"></div>
+          <div class="field"><label>Teléfono</label><input id="cv-phone" placeholder="+51 999 999 999"></div>
+          <div class="field"><label>Dirección</label><input id="cv-address" placeholder="Ciudad, país"></div>
+          <div class="field"><label>Website (opcional)</label><input id="cv-website" placeholder="tu-portfolio.com"></div>
+        </div>
+      </div>
+
+      <div class="section" data-tmpl-only="cv">
+        <div class="section-title">Idiomas</div>
+        <div class="list" id="cv-idiomas-list"></div>
+        <button class="add-btn" id="cv-add-idioma">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Agregar idioma
+        </button>
+      </div>
+
+      <div class="section" data-tmpl-only="cv">
+        <div class="section-title">Experiencia profesional</div>
+        <div class="list" id="cv-experiencia-list"></div>
+        <button class="add-btn" id="cv-add-experiencia">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Agregar experiencia
+        </button>
+      </div>
+
+      <div class="section" data-tmpl-only="cv">
+        <div class="section-title">Educación</div>
+        <div class="list" id="cv-educacion-list"></div>
+        <button class="add-btn" id="cv-add-educacion">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Agregar educación
+        </button>
+      </div>
+
+      <div class="section" data-tmpl-only="cv">
+        <div class="section-title">Habilidades</div>
+        <div class="list" id="cv-habilidades-list"></div>
+        <button class="add-btn" id="cv-add-habilidad">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Agregar habilidad
+        </button>
       </div>
 
     </div>
@@ -335,14 +397,14 @@ Informar si el paciente está bajo tratamiento farmacológico."></textarea>
         <div class="tc-desc">Documento para cotizar servicios, productos o exámenes. Con datos del cliente o paciente.</div>
       </button>
 
-      <button class="template-card disabled" data-doctype="cv">
+      <button class="template-card" data-doctype="cv">
         <div class="tc-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
             <circle cx="12" cy="7" r="4"/>
           </svg>
         </div>
-        <div class="tc-title">Curriculum Vitae <span class="tc-tag">Próximamente</span></div>
+        <div class="tc-title">Curriculum Vitae</div>
         <div class="tc-desc">Crea CVs profesionales con tu información, experiencia y habilidades.</div>
       </button>
     </div>
