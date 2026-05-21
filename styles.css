@@ -42,6 +42,17 @@ textarea{resize:vertical;min-height:72px}
   border-bottom:1px solid var(--line);
 }
 .brand{display:flex;align-items:center;gap:10px}
+.brand-back{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:32px;height:32px;
+  border-radius:9px;
+  background:transparent;
+  color:var(--ink-2);
+  transition:background .15s ease, color .15s ease;
+  margin-right:-2px;
+}
+.brand-back:hover{background:var(--line-2);color:var(--ink)}
+.brand-back svg{width:17px;height:17px}
 .brand-mark{
   width:32px;height:32px;border-radius:9px;
   background:var(--ink);color:var(--bg);

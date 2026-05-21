@@ -159,8 +159,8 @@ async function loadDataForSession(){
   try{ state.catalog = cRaw ? JSON.parse(cRaw) : []; }
   catch(e){ state.catalog = []; }
 
-  // Reset quote with defaults from settings
-  state.quote = {
+  // Defaults for the quote
+  const defaultQuote = {
     number:'',
     date:new Date().toISOString().slice(0,10),
     validity:30,
@@ -176,6 +176,35 @@ async function loadDataForSession(){
       : [],
     observations: state.settings.obsDefaults || ''
   };
+
+  // Restore saved quote in-progress if exists (per account+template);
+  // otherwise start fresh with defaults.
+  const qRaw = await storageGet(dataKey('quote'));
+  if(qRaw){
+    try{
+      const saved = JSON.parse(qRaw);
+      state.quote = {...defaultQuote, ...saved};
+    }catch(e){
+      state.quote = defaultQuote;
+    }
+  }else{
+    state.quote = defaultQuote;
+  }
+}
+
+async function persistQuote(){
+  if(!state.account || !state.template) return;
+  try{
+    await storageSet(dataKey('quote'), JSON.stringify(state.quote));
+  }catch(e){
+    // silent: storage may fail (quota, etc), but app keeps running with state in memory
+  }
+}
+
+let _quoteSaveTimer = null;
+function autoSaveQuote(){
+  if(_quoteSaveTimer) clearTimeout(_quoteSaveTimer);
+  _quoteSaveTimer = setTimeout(()=>{ persistQuote(); }, 600);
 }
 
 async function saveSettings(){
@@ -1029,6 +1058,14 @@ async function downloadPDF(){
    EVENT WIRING
 ============================================================= */
 function wire(){
+  // Auto-save the quote (debounced) on any input/change in the form panel,
+  // so progress is preserved across template switches and reloads.
+  const formPanel = document.querySelector('.form-panel');
+  if(formPanel){
+    formPanel.addEventListener('input', autoSaveQuote);
+    formPanel.addEventListener('change', autoSaveQuote);
+  }
+
   // form quote inputs
   const qBind = [
     ['#f-number','number'],
@@ -1204,9 +1241,18 @@ function wire(){
     showLogin();
   });
 
-  // Session pill in header → back to template selector
-  $('#session-pill').addEventListener('click', ()=>{
+  // Back button in header → save current quote, return to doctype selector
+  $('#back-to-doctype').addEventListener('click', async ()=>{
     if(!state.account) return;
+    await persistQuote();
+    showDocTypeSelector();
+  });
+
+  // Session pill in header → back to template selector (Lab/General).
+  // Persists current quote first so it can be restored on return.
+  $('#session-pill').addEventListener('click', async ()=>{
+    if(!state.account) return;
+    await persistQuote();
     showTemplateSelector();
   });
 
