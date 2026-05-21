@@ -1964,6 +1964,15 @@ function applyTemplateUI(){
 function applySectionVisibility(){
   const sections = state.settings.sections || {};
   document.querySelectorAll('[data-section]').forEach(el=>{
+    // Respect data-tmpl-only first: don't show sections that don't belong to the current template
+    const tmplOnly = el.dataset.tmplOnly;
+    if(tmplOnly){
+      const allowed = tmplOnly.split(/\s+/).filter(Boolean);
+      if(!allowed.includes(state.template)){
+        el.style.display = 'none';
+        return;
+      }
+    }
     const key = el.dataset.section;
     const enabled = sections[key] !== false;
     el.style.display = enabled ? '' : 'none';
