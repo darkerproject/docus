@@ -3,7 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover">
-<title>Docus</title>
+<title>Dokus</title>
+
+<!-- PWA: manifest, theme color, platform-specific tags -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#111827">
+<meta name="application-name" content="Dokus">
+<meta name="description" content="Creador de documentos profesionales — cotizaciones y currículums en PDF">
+<!-- iOS: enables "Add to Home Screen" as standalone app (no Safari chrome) -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dokus">
+<!-- Icons -->
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
@@ -16,7 +32,7 @@
 <header class="app-header">
   <div class="brand">
     <span class="brand-mark">D</span>
-    <span class="brand-name">Docus <em id="brand-tmpl-tag"></em></span>
+    <span class="brand-name">Dokus <em id="brand-tmpl-tag"></em></span>
   </div>
   <div class="actions">
     <button class="session-pill" id="session-pill" title="Cambiar plantilla"></button>
@@ -440,7 +456,7 @@ Informar si el paciente está bajo tratamiento farmacológico."></textarea>
       <div class="auth-brand">
         <span class="brand-mark">D</span>
       </div>
-      <h2 class="auth-title">Docus</h2>
+      <h2 class="auth-title">Dokus</h2>
       <p class="auth-tagline">by Darker Project</p>
 
       <div class="account-list" id="account-list"></div>

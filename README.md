@@ -1,4 +1,4 @@
-# Docus
+# Dokus
 
 > *by Darker Project*
 
@@ -34,7 +34,7 @@ Cada visitante tendrá su propio espacio de cuentas en su navegador — los dato
 ## Estructura del proyecto
 
 ```
-docus/
+dokus/
 ├── index.html      Estructura HTML
 ├── styles.css      Estilos
 ├── app.js          Lógica de la aplicación

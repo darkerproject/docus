@@ -1337,7 +1337,7 @@ body:has(.modal-overlay.open){
   #brand-tmpl-tag{display:none}
   /* Hide empty placeholder fields used only for desktop grid alignment */
   .field:empty{display:none}
-  /* Configuración loads as a panel inside the content area, below the main Docus header
+  /* Configuración loads as a panel inside the content area, below the main Dokus header
      (header stays visible at top). Form/preview/tabs are hidden while config is open. */
   .modal-overlay{
     top:calc(60px + env(safe-area-inset-top));

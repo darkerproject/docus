@@ -2424,4 +2424,12 @@ function setupPreviewScale(){
   updatePreviewScale();
 }
 
+/* Service worker registration — enables offline shell and "installable" PWA.
+   Registered after load so it never blocks the initial render. */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+
 init();
