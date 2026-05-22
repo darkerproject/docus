@@ -2372,6 +2372,7 @@ async function init(){
   await loadAccounts();
   wire();
   setupPreviewScale();
+  setupLayoutMetrics();
 
   const session = await loadSession();
   if(session && session.account && session.template){
@@ -2422,6 +2423,35 @@ function setupPreviewScale(){
     previewBtn.addEventListener('click', ()=>setTimeout(updatePreviewScale, 0));
   }
   updatePreviewScale();
+}
+
+/* Measure the real heights of the fixed header and mobile tabs, exposing them
+   as CSS variables. This keeps the modal panel, tabs, and body padding aligned
+   regardless of safe-area insets — which differ between Safari and an installed
+   standalone PWA (where there's no browser URL bar). */
+function updateLayoutMetrics(){
+  const header = document.querySelector('.app-header');
+  const tabs = document.querySelector('.mobile-tabs');
+  if(header){
+    document.documentElement.style.setProperty('--app-header-h', header.offsetHeight + 'px');
+  }
+  if(tabs){
+    const t = tabs.offsetHeight;       // 0 when display:none (desktop)
+    if(t > 0) document.documentElement.style.setProperty('--mobile-tabs-h', t + 'px');
+  }
+}
+
+function setupLayoutMetrics(){
+  updateLayoutMetrics();
+  if(typeof ResizeObserver !== 'undefined'){
+    const ro = new ResizeObserver(()=>updateLayoutMetrics());
+    const header = document.querySelector('.app-header');
+    const tabs = document.querySelector('.mobile-tabs');
+    if(header) ro.observe(header);
+    if(tabs) ro.observe(tabs);
+  }
+  window.addEventListener('resize', updateLayoutMetrics);
+  window.addEventListener('orientationchange', ()=>setTimeout(updateLayoutMetrics, 120));
 }
 
 /* Service worker registration — enables offline shell and "installable" PWA.

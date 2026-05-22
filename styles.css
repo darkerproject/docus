@@ -1291,7 +1291,10 @@ body:has(.modal-overlay.open){
 
 /* ---------- Mobile ---------- */
 @media (max-width:1023px){
-  body{padding-top:calc(110px + env(safe-area-inset-top))}
+  /* Header and tabs are position:fixed with safe-area-aware padding, so their
+     real heights vary between browser and standalone PWA. We measure them via
+     JS (--app-header-h, --mobile-tabs-h) instead of hardcoding magic numbers. */
+  body{padding-top:calc(var(--app-header-h, 62px) + var(--mobile-tabs-h, 47px))}
   .layout{grid-template-columns:1fr;height:auto}
   .form-panel,.preview-panel{padding:22px 36px}
   .preview-panel{background:var(--bg)}
@@ -1307,7 +1310,7 @@ body:has(.modal-overlay.open){
     -webkit-backdrop-filter:saturate(180%) blur(20px);
     padding:6px 14px;
     position:fixed;
-    top:calc(60px + env(safe-area-inset-top));
+    top:var(--app-header-h, 62px);
     left:0;right:0;z-index:40;
     box-shadow:0 8px 18px -8px rgba(0,0,0,.28),
                inset 0 1px 0 rgba(255,255,255,.05);
@@ -1352,7 +1355,7 @@ body:has(.modal-overlay.open){
   /* Configuración loads as a panel inside the content area, below the main Dokus header
      (header stays visible at top). Form/preview/tabs are hidden while config is open. */
   .modal-overlay{
-    top:calc(60px + env(safe-area-inset-top));
+    top:var(--app-header-h, 62px);
     padding:0;
     background:var(--bg-2);
     backdrop-filter:none;
