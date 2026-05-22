@@ -1365,14 +1365,20 @@ body:has(.modal-overlay.open){
      (header stays visible at top). Form/preview/tabs are hidden while config is open. */
   .modal-overlay{
     top:var(--hdr);
+    bottom:auto;
+    /* Explicit height instead of relying on top+bottom:0. iOS does not always
+       treat a fixed element's top+bottom-derived height as "definite", so the
+       modal's height:100% would collapse to content height and leave empty
+       space at the bottom. An explicit height fixes it. 100dvh tracks the
+       dynamic viewport; JS further pins exact pixels at open-time. */
+    height:calc(100dvh - var(--hdr));
     padding:0;
     background:var(--bg-2);
     backdrop-filter:none;
     -webkit-backdrop-filter:none;
     transition:none;
-    /* On mobile the overlay is a full-height fixed box; switch from the
-       desktop centering grid to a plain block so the modal's height:100%
-       resolves against the overlay instead of collapsing to content height. */
+    /* Plain block (not the desktop centering grid) so the modal's height:100%
+       resolves against this overlay. */
     display:block;
     overflow:hidden;
   }
