@@ -1291,10 +1291,14 @@ body:has(.modal-overlay.open){
 
 /* ---------- Mobile ---------- */
 @media (max-width:1023px){
-  /* Header and tabs are position:fixed with safe-area-aware padding, so their
-     real heights vary between browser and standalone PWA. We measure them via
-     JS (--app-header-h, --mobile-tabs-h) instead of hardcoding magic numbers. */
-  body{padding-top:calc(var(--app-header-h, 62px) + var(--mobile-tabs-h, 47px))}
+  /* Header height is fully CSS-determined: a fixed 56px content band plus the
+     safe-area inset. Because it uses env() directly (no JS measurement), the
+     header, tabs, modal and body padding all stay perfectly in sync from the
+     very first paint — no layout-shift when env() resolves on iOS PWA. */
+  :root{
+    --hdr: calc(56px + env(safe-area-inset-top));
+  }
+  body{padding-top:calc(var(--hdr) + var(--mobile-tabs-h, 43px))}
   .layout{grid-template-columns:1fr;height:auto}
   .form-panel,.preview-panel{padding:22px 36px}
   .preview-panel{background:var(--bg)}
@@ -1310,7 +1314,7 @@ body:has(.modal-overlay.open){
     -webkit-backdrop-filter:saturate(180%) blur(20px);
     padding:6px 14px;
     position:fixed;
-    top:var(--app-header-h, 62px);
+    top:var(--hdr);
     left:0;right:0;z-index:40;
     box-shadow:0 8px 18px -8px rgba(0,0,0,.28),
                inset 0 1px 0 rgba(255,255,255,.05);
@@ -1346,7 +1350,10 @@ body:has(.modal-overlay.open){
   }
   .row,.row-3{grid-template-columns:1fr}
   .actions .btn-text{display:none}
-  .app-header{padding:calc(12px + env(safe-area-inset-top)) 16px 12px}
+  .app-header{
+    height:var(--hdr);
+    padding:env(safe-area-inset-top) 16px 0 16px;
+  }
   .brand-name{font-size:16px}
   /* The pill already shows current template; hide the inline tag to keep header compact */
   #brand-tmpl-tag{display:none}
@@ -1355,7 +1362,7 @@ body:has(.modal-overlay.open){
   /* Configuración loads as a panel inside the content area, below the main Dokus header
      (header stays visible at top). Form/preview/tabs are hidden while config is open. */
   .modal-overlay{
-    top:var(--app-header-h, 62px);
+    top:var(--hdr);
     padding:0;
     background:var(--bg-2);
     backdrop-filter:none;

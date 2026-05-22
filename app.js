@@ -2425,18 +2425,13 @@ function setupPreviewScale(){
   updatePreviewScale();
 }
 
-/* Measure the real heights of the fixed header and mobile tabs, exposing them
-   as CSS variables. This keeps the modal panel, tabs, and body padding aligned
-   regardless of safe-area insets — which differ between Safari and an installed
-   standalone PWA (where there's no browser URL bar). */
+/* Measure the mobile tabs height and expose it as a CSS variable so the body
+   padding-top can clear both the fixed header and the fixed tabs. The header
+   height itself is pure CSS (--hdr, env-based) so it needs no measurement. */
 function updateLayoutMetrics(){
-  const header = document.querySelector('.app-header');
   const tabs = document.querySelector('.mobile-tabs');
-  if(header){
-    document.documentElement.style.setProperty('--app-header-h', header.offsetHeight + 'px');
-  }
   if(tabs){
-    const t = tabs.offsetHeight;       // 0 when display:none (desktop)
+    const t = tabs.offsetHeight;       // 0 when display:none (desktop / modal open)
     if(t > 0) document.documentElement.style.setProperty('--mobile-tabs-h', t + 'px');
   }
 }
@@ -2445,9 +2440,7 @@ function setupLayoutMetrics(){
   updateLayoutMetrics();
   if(typeof ResizeObserver !== 'undefined'){
     const ro = new ResizeObserver(()=>updateLayoutMetrics());
-    const header = document.querySelector('.app-header');
     const tabs = document.querySelector('.mobile-tabs');
-    if(header) ro.observe(header);
     if(tabs) ro.observe(tabs);
   }
   window.addEventListener('resize', updateLayoutMetrics);
