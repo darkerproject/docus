@@ -1355,6 +1355,7 @@ body:has(.modal-overlay.open){
   .app-header{
     height:var(--hdr);
     padding:env(safe-area-inset-top) 16px 0 16px;
+    z-index:120;   /* above the settings overlay (100) so it stays visible on top */
   }
   .brand-name{font-size:16px}
   /* The pill already shows current template; hide the inline tag to keep header compact */
@@ -1364,29 +1365,37 @@ body:has(.modal-overlay.open){
   /* Configuración loads as a panel inside the content area, below the main Dokus header
      (header stays visible at top). Form/preview/tabs are hidden while config is open. */
   .modal-overlay{
-    top:var(--hdr);
-    bottom:auto;
-    /* Explicit height instead of relying on top+bottom:0. iOS does not always
-       treat a fixed element's top+bottom-derived height as "definite", so the
-       modal's height:100% would collapse to content height and leave empty
-       space at the bottom. An explicit height fixes it. 100dvh tracks the
-       dynamic viewport; JS further pins exact pixels at open-time. */
-    height:calc(100dvh - var(--hdr));
+    /* Full-screen fixed layer (top:0;bottom:0). This is the most reliable
+       fixed positioning there is — it always fills the current viewport with
+       zero dependency on env()/dvh/measurements. The settings panel itself is
+       absolutely positioned below the header (see .modal). */
+    top:0;
+    bottom:0;
+    height:auto;
     padding:0;
     background:var(--bg-2);
     backdrop-filter:none;
     -webkit-backdrop-filter:none;
     transition:none;
-    /* Plain block (not the desktop centering grid) so the modal's height:100%
-       resolves against this overlay. */
     display:block;
     overflow:hidden;
   }
   .modal{
-    width:100%;
+    /* The settings panel: absolutely positioned inside the full-screen overlay,
+       from the header bottom (var(--hdr)) down to the screen bottom. Using
+       top+bottom on an absolutely-positioned element gives a definite, reliably
+       resolved height — so the flex column (head / scrolling body / foot) fills
+       with no gap, on every browser. var(--hdr) is the SAME expression the app
+       header uses for its height, so the two are always perfectly in sync. */
+    position:absolute;
+    top:var(--hdr);
+    left:0;
+    right:0;
+    bottom:0;
+    width:auto;
+    height:auto;
     max-width:none;
     max-height:none;
-    height:100%;
     border-radius:0;
     box-shadow:none;
     transform:none !important;
@@ -1426,12 +1435,11 @@ body:has(.modal-overlay.open){
   .subsection-title{font-size:10px;margin-bottom:10px}
   .toggle-row{padding:7px 12px}
   .section-toggles{gap:7px}
-  /* Hide content panels and tabs while config is open (header stays) */
-  body:has(.modal-overlay.open) .form-panel,
-  body:has(.modal-overlay.open) .preview-panel,
-  body:has(.modal-overlay.open) .mobile-tabs{
-    display:none !important;
-  }
+  /* NOTE: content panels and tabs are intentionally NOT hidden while config is
+     open. The opaque full-screen overlay already covers them. Hiding them used
+     to make the page suddenly short, which made mobile browsers re-show their
+     toolbars / recalculate the viewport — shifting the modal. Keeping the page
+     tall keeps the viewport stable. */
   .modal-body{
     -webkit-overflow-scrolling:touch;
     overscroll-behavior:none;

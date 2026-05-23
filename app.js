@@ -1523,33 +1523,10 @@ function openSettings(){
   renderCVSectionToggles();
   updateCVHabPosControl();
 
-  pinSettingsModal();
   $('#settings-modal').classList.add('open');
 }
 function closeSettings(){
   $('#settings-modal').classList.remove('open');
-}
-
-/* Pin the settings modal exactly below the real, rendered bottom edge of the
-   app header AND give it an explicit pixel height down to the real viewport
-   bottom. Measuring at open-time is reliable, and an explicit height avoids
-   the iOS quirk where a fixed element's top+bottom height isn't treated as
-   "definite", which left the modal collapsed with empty space at the bottom. */
-function pinSettingsModal(){
-  const modal = document.getElementById('settings-modal');
-  if(!modal) return;
-  if(window.matchMedia('(max-width:1023px)').matches){
-    const header = document.querySelector('.app-header');
-    const top = header ? Math.round(header.getBoundingClientRect().bottom) : 0;
-    const vh = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
-    modal.style.top = top + 'px';
-    modal.style.bottom = 'auto';
-    modal.style.height = Math.round(vh - top) + 'px';
-  }else{
-    modal.style.top = '';
-    modal.style.bottom = '';
-    modal.style.height = '';   // desktop: let the centered-overlay CSS take over
-  }
 }
 
 function updateLogoPreview(){
@@ -2468,17 +2445,6 @@ function setupLayoutMetrics(){
   }
   window.addEventListener('resize', updateLayoutMetrics);
   window.addEventListener('orientationchange', ()=>setTimeout(updateLayoutMetrics, 120));
-  // Re-pin the settings modal if the viewport changes while it's open
-  // (device rotation, browser toolbars showing/hiding, keyboard).
-  const repin = ()=>{
-    const modal = document.getElementById('settings-modal');
-    if(modal && modal.classList.contains('open')) pinSettingsModal();
-  };
-  window.addEventListener('resize', repin);
-  window.addEventListener('orientationchange', ()=>setTimeout(repin, 160));
-  if(window.visualViewport){
-    window.visualViewport.addEventListener('resize', repin);
-  }
 }
 
 /* Service worker registration — enables offline shell and "installable" PWA.
