@@ -838,12 +838,13 @@ details.catalog[open] summary::before{transform:rotate(90deg)}
   position:fixed;inset:0;z-index:100;
   background:rgba(20,20,20,.4);
   backdrop-filter:blur(4px);
-  display:grid;place-items:center;
+  /* Hidden via display:none (not opacity). A display change forces a repaint,
+     so Safari can never leave a "ghost" overlay painted after closing. */
+  display:none;
+  place-items:center;
   padding:20px;
-  opacity:0;pointer-events:none;
-  transition:opacity .2s ease;
 }
-.modal-overlay.open{opacity:1;pointer-events:auto}
+.modal-overlay.open{display:grid}
 .modal{
   width:100%;max-width:580px;max-height:90vh;
   background:var(--bg-2);
@@ -1376,10 +1377,9 @@ body:has(.modal-overlay.open){
     background:var(--bg-2);
     backdrop-filter:none;
     -webkit-backdrop-filter:none;
-    transition:none;
-    display:block;
     overflow:hidden;
   }
+  .modal-overlay.open{display:block}   /* override the desktop grid */
   .modal{
     /* The settings panel: absolutely positioned inside the full-screen overlay,
        from the header bottom (var(--hdr)) down to the screen bottom. Using

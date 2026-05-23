@@ -3,7 +3,7 @@
    cache fallback when offline. Cross-origin requests (CDN libs) are not
    handled here — the browser cache and the CDN's own caching handle those. */
 
-const CACHE = 'dokus-v4';
+const CACHE = 'dokus-v5';
 const CORE = [
   './',
   './index.html',
