@@ -2447,12 +2447,64 @@ function setupLayoutMetrics(){
   window.addEventListener('orientationchange', ()=>setTimeout(updateLayoutMetrics, 120));
 }
 
-/* Service worker registration — enables offline shell and "installable" PWA.
-   Registered after load so it never blocks the initial render. */
+/* Service worker registration + "new version available" flow.
+   Registered after load so it never blocks the initial render. When a new
+   service worker finishes installing while an old one still controls the page,
+   we show an update banner. Tapping "Actualizar" tells the new worker to take
+   over and reloads the page with the fresh code. The user's saved data lives
+   in localStorage and is never touched by an update. */
 if('serviceWorker' in navigator){
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
+  window.addEventListener('load', async () => {
+    try{
+      const reg = await navigator.serviceWorker.register('sw.js');
+
+      // An update may already be downloaded and waiting from a previous visit.
+      if(reg.waiting && navigator.serviceWorker.controller){
+        showUpdateBanner(reg.waiting);
+      }
+
+      // A new worker started installing in this session.
+      reg.addEventListener('updatefound', () => {
+        const incoming = reg.installing;
+        if(!incoming) return;
+        incoming.addEventListener('statechange', () => {
+          // "installed" while a controller already exists == update ready.
+          if(incoming.state === 'installed' && navigator.serviceWorker.controller){
+            showUpdateBanner(incoming);
+          }
+        });
+      });
+
+      // Check for a newer version periodically and whenever the app is reopened.
+      setInterval(() => reg.update().catch(()=>{}), 60 * 60 * 1000);
+      document.addEventListener('visibilitychange', () => {
+        if(document.visibilityState === 'visible') reg.update().catch(()=>{});
+      });
+    }catch(e){ /* registration failed — the app still works while online */ }
   });
+}
+
+/* Shows the bottom "update available" banner and wires its buttons. */
+function showUpdateBanner(worker){
+  const banner = document.getElementById('update-banner');
+  if(!banner || banner.classList.contains('show')) return;
+  banner.classList.add('show');
+
+  const refreshBtn = document.getElementById('update-refresh-btn');
+  const dismissBtn = document.getElementById('update-dismiss-btn');
+
+  refreshBtn.onclick = () => {
+    refreshBtn.disabled = true;
+    refreshBtn.textContent = 'Actualizando…';
+    // Reload once the new worker takes control. The 3s fallback covers the
+    // rare case where 'controllerchange' doesn't fire.
+    navigator.serviceWorker.addEventListener('controllerchange',
+      () => window.location.reload(), { once:true });
+    setTimeout(() => window.location.reload(), 3000);
+    // Tell the waiting worker to activate immediately.
+    worker.postMessage({ type:'SKIP_WAITING' });
+  };
+  dismissBtn.onclick = () => banner.classList.remove('show');
 }
 
 init();

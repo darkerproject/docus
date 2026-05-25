@@ -576,6 +576,13 @@ Informar si el paciente está bajo tratamiento farmacológico."></textarea>
   </div>
 </div>
 
+<!-- "New version available" banner — shown by the service-worker update flow -->
+<div class="update-banner" id="update-banner" role="status" aria-live="polite">
+  <span class="update-banner-text">Nueva versión disponible</span>
+  <button class="update-banner-btn" id="update-refresh-btn" type="button">Actualizar</button>
+  <button class="update-banner-close" id="update-dismiss-btn" type="button" aria-label="Descartar">&#10005;</button>
+</div>
+
 <script src="app.js"></script>
 </body>
 </html>

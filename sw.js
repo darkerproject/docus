@@ -1,9 +1,14 @@
 /* Dokus Service Worker — minimal offline shell.
    Strategy: network-first for same-origin GETs (so updates apply fast), with
    cache fallback when offline. Cross-origin requests (CDN libs) are not
-   handled here — the browser cache and the CDN's own caching handle those. */
+   handled here — the browser cache and the CDN's own caching handle those.
 
-const CACHE = 'dokus-v5';
+   Update flow: a new worker does NOT skipWaiting() automatically. It stays in
+   the "waiting" state so the page can show a "Nueva versión disponible"
+   banner; when the user taps "Actualizar", the page sends a SKIP_WAITING
+   message and this worker activates, clears old caches and takes over. */
+
+const CACHE = 'dokus-v6';
 const CORE = [
   './',
   './index.html',
@@ -18,7 +23,7 @@ const CORE = [
 ];
 
 self.addEventListener('install', event => {
-  self.skipWaiting();
+  // No skipWaiting() here on purpose — see the update-flow note above.
   event.waitUntil(
     caches.open(CACHE).then(cache => cache.addAll(CORE)).catch(() => {})
   );
@@ -32,12 +37,19 @@ self.addEventListener('activate', event => {
   );
 });
 
+// Sent by the page when the user taps "Actualizar" on the update banner.
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('fetch', event => {
   const req = event.request;
   if (req.method !== 'GET') return;
 
   const url = new URL(req.url);
-  // Only handle same-origin requests; let CDN libs (jsPDF, html2canvas, Google Fonts) go straight through.
+  // Only handle same-origin requests; let CDN libs go straight through.
   if (url.origin !== self.location.origin) return;
 
   event.respondWith(
