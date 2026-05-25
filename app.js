@@ -1645,55 +1645,68 @@ async function downloadPDF(){
     // This guarantees the PDF always renders at full desktop size with desktop
     // fonts/padding, regardless of the actual viewport (mobile media queries
     // would otherwise affect font-size, padding, etc).
-    clone = node.cloneNode(true);
-    clone.id = '';
-    clone.classList.add('doc-pdf-mode');
-    clone.style.position = 'absolute';
-    clone.style.left = '-9999px';
-    clone.style.top = '0';
-    document.body.appendChild(clone);
+    // Build the off-screen clone with forced desktop A4 styling. doc-pdf-mode
+    // guarantees full desktop size/fonts/padding regardless of viewport.
+    const docClone = node.cloneNode(true);
+    docClone.id = '';
+    docClone.classList.add('doc-pdf-mode');
+    docClone.style.position = 'static';
+    docClone.style.margin = '0';
 
-    // Two RAFs to let layout settle after DOM insertion
+    // Off-screen A4-sized viewport. The document is shifted up inside it one
+    // page at a time; html2canvas then captures a clean 794x1123 box per page.
+    // Rendering page-by-page (instead of one huge canvas) keeps each canvas
+    // small enough to stay within mobile-Safari's canvas-size limits even at
+    // high resolution.
+    const PAGE_W = 794, PAGE_H = 1123;
+    const SCALE = 4;   // 4x ≈ 384 dpi — sharper than standard print quality
+    const viewport = document.createElement('div');
+    viewport.style.cssText =
+      'position:absolute;left:-9999px;top:0;width:' + PAGE_W + 'px;height:' +
+      PAGE_H + 'px;overflow:hidden;background:#ffffff';
+    viewport.appendChild(docClone);
+    document.body.appendChild(viewport);
+    clone = viewport;   // tracked for cleanup in finally{}
+
+    // Settle layout, then measure the full document height.
     await new Promise(r => requestAnimationFrame(()=>requestAnimationFrame(r)));
-
-    let canvas;
-    try{
-      canvas = await html2canvas(clone, {
-        scale:2,
-        useCORS:true,
-        backgroundColor:'#ffffff',
-        logging:false,
-        windowWidth: 1280,
-      });
-    }catch(hcErr){
-      throw new Error('html2canvas: ' + (hcErr && hcErr.message ? hcErr.message : 'falló render'));
-    }
-
-    if(!canvas) throw new Error('No se generó el canvas');
-
-    let imgData;
-    try{
-      imgData = canvas.toDataURL('image/jpeg', 0.95);
-    }catch(tdErr){
-      throw new Error('toDataURL: ' + (tdErr && tdErr.message ? tdErr.message : 'canvas tainted'));
-    }
+    const fullH = docClone.offsetHeight;
+    const pageCount = Math.max(1, Math.ceil(fullH / PAGE_H));
 
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p','mm','a4');
-    const pdfWidth = 210;
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-    const pageHeight = 297;
 
-    let position = 0;
-    let heightLeft = pdfHeight;
-    pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
-    heightLeft -= pageHeight;
+    for(let i = 0; i < pageCount; i++){
+      // Shift the document up so the current page sits inside the viewport.
+      docClone.style.marginTop = (-i * PAGE_H) + 'px';
+      await new Promise(r => requestAnimationFrame(()=>requestAnimationFrame(r)));
 
-    while(heightLeft > 0){
-      position = position - pageHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
-      heightLeft -= pageHeight;
+      let pageCanvas;
+      try{
+        pageCanvas = await html2canvas(viewport, {
+          scale: SCALE,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+          width: PAGE_W,
+          height: PAGE_H,
+          windowWidth: 1280,
+        });
+      }catch(hcErr){
+        throw new Error('html2canvas: ' + (hcErr && hcErr.message ? hcErr.message : 'falló render'));
+      }
+      if(!pageCanvas) throw new Error('No se generó el canvas');
+
+      let imgData;
+      try{
+        // PNG = lossless — keeps text edges perfectly crisp (no JPEG softening).
+        imgData = pageCanvas.toDataURL('image/png');
+      }catch(tdErr){
+        throw new Error('toDataURL: ' + (tdErr && tdErr.message ? tdErr.message : 'canvas tainted'));
+      }
+
+      if(i > 0) pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
     }
 
     const customerName = state.template === 'cv'
