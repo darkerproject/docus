@@ -116,6 +116,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           <span id="add-item-label">Agregar examen</span>
         </button>
+        <button class="add-btn" id="add-package" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+          <span>Agregar paquete</span>
+        </button>
         <details class="catalog">
           <summary>Catálogo guardado</summary>
           <div class="catalog-list" id="catalog-list"></div>
@@ -141,7 +145,7 @@
       </div>
 
       <div class="section" data-section="observations" data-tmpl-only="lab general">
-        <div class="section-title">Observaciones</div>
+        <div class="section-title" id="obs-title">Observaciones</div>
         <div class="field">
           <textarea id="obs" rows="4" placeholder="Notas, aclaraciones, alcance del servicio…"></textarea>
         </div>
@@ -346,7 +350,7 @@
 Informar si el paciente está bajo tratamiento farmacológico."></textarea>
         </div>
         <div class="field">
-          <label>Observaciones predeterminadas</label>
+          <label id="s-obs-label">Observaciones predeterminadas</label>
           <textarea id="s-obs" rows="3" placeholder="La toma de muestra no está incluida en la presente cotización."></textarea>
         </div>
       </div>

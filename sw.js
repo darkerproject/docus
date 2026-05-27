@@ -8,7 +8,7 @@
    banner; when the user taps "Actualizar", the page sends a SKIP_WAITING
    message and this worker activates, clears old caches and takes over. */
 
-const CACHE = 'dokus-v6';
+const CACHE = 'dokus-v7';
 const CORE = [
   './',
   './index.html',

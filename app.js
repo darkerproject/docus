@@ -435,11 +435,74 @@ function renderExamsLab(){
   });
 }
 
+/* Builds the editor card for a "paquete" — a named group with a single price
+   and a list of included sub-items (description only, no individual price). */
+function buildPackageCard(ex, i){
+  if(!Array.isArray(ex.includes)) ex.includes = [];
+  const el = document.createElement('div');
+  el.className = 'exam-item pkg-card';
+  const incRows = ex.includes.map((inc,j)=>`
+    <div class="pkg-inc-row">
+      <span class="pkg-bullet">•</span>
+      <input data-inc="${j}" placeholder="Item incluido" value="${escapeHTML(inc.name||'')}">
+      <button class="icon-btn" data-act="del-inc" data-j="${j}" title="Quitar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`).join('');
+  el.innerHTML = `
+    <input data-pf="name" class="pkg-name-input" placeholder="Nombre del paquete" value="${escapeHTML(ex.name||'')}">
+    <input data-pf="price" type="number" step="0.01" min="0" class="pkg-price-input" placeholder="Precio del paquete" value="${ex.price || ''}">
+    <div class="pkg-includes-label">Incluye</div>
+    <div class="pkg-includes">${incRows}</div>
+    <button class="btn-link" data-act="add-inc">+ Agregar item al paquete</button>
+    <div class="actions-row">
+      <button class="icon-btn" data-act="del-pkg" title="Eliminar paquete">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>
+      </button>
+    </div>
+  `;
+  el.querySelectorAll('[data-pf]').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const f = e.target.dataset.pf;
+      if(f === 'price'){
+        state.quote.exams[i].price = parseFloat(e.target.value) || 0;
+      }else{
+        state.quote.exams[i].name = e.target.value;
+      }
+      renderPreview();
+    });
+  });
+  el.querySelectorAll('[data-inc]').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const j = parseInt(e.target.dataset.inc, 10);
+      state.quote.exams[i].includes[j].name = e.target.value;
+      renderPreview();
+    });
+  });
+  el.querySelector('[data-act="add-inc"]').addEventListener('click', ()=>{
+    state.quote.exams[i].includes.push({name:''});
+    renderExams(); renderPreview();
+  });
+  el.querySelectorAll('[data-act="del-inc"]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const j = parseInt(btn.dataset.j, 10);
+      state.quote.exams[i].includes.splice(j,1);
+      renderExams(); renderPreview();
+    });
+  });
+  el.querySelector('[data-act="del-pkg"]').addEventListener('click', ()=>{
+    state.quote.exams.splice(i,1);
+    renderExams(); renderPreview();
+  });
+  return el;
+}
+
 function renderExamsGeneral(){
   const list = $('#exams-list');
   list.innerHTML = '';
   const cur = state.settings.currency || '';
   state.quote.exams.forEach((ex,i)=>{
+    if(ex.type === 'package'){ list.appendChild(buildPackageCard(ex, i)); return; }
     const sub = getItemSubtotal(ex);
     const el = document.createElement('div');
     el.className = 'exam-item';
@@ -578,6 +641,7 @@ function renderCatalog(){
 ============================================================= */
 function getItemSubtotal(item){
   if(state.template === 'general'){
+    if(item.type === 'package') return parseFloat(item.price) || 0;
     const q = parseFloat(item.qty);
     const p = parseFloat(item.unitPrice);
     return ((isNaN(q)?1:q) * (isNaN(p)?0:p)) || 0;
@@ -1257,6 +1321,19 @@ function renderPreview(){
   if(isGeneral){
     const rows = q.exams.length
       ? q.exams.map(ex=>{
+          if(ex.type === 'package'){
+            const incRows = (ex.includes||[])
+              .filter(inc=>inc && inc.name && inc.name.trim())
+              .map(inc=>`
+                <tr class="pkg-inc-row">
+                  <td colspan="4" class="pkg-inc-cell">${escapeHTML(inc.name)}</td>
+                </tr>`).join('');
+            return `
+              <tr class="pkg-head-row">
+                <td colspan="3"><div class="exam-name pkg-name">${escapeHTML(ex.name||'—')}</div></td>
+                <td style="text-align:right">${cur} ${fmt(parseFloat(ex.price)||0)}</td>
+              </tr>${incRows}`;
+          }
           const sub = getItemSubtotal(ex);
           return `
             <tr>
@@ -1334,7 +1411,7 @@ function renderPreview(){
   if(sections.observations !== false && q.observations){
     observationsHTML = `
       <div class="doc-section">
-        <div class="doc-section-title">OBSERVACIONES</div>
+        <div class="doc-section-title">${isGeneral ? 'INDICACIONES' : 'OBSERVACIONES'}</div>
         <div class="doc-observations">${escapeHTML(q.observations)}</div>
       </div>
     `;
@@ -1410,7 +1487,7 @@ function renderSectionToggles(){
       {key:'client_email', label:'Email', sub:'Campo en datos del cliente'},
       {key:'service_address', label:'Dirección del servicio', sub:'Lugar/dirección del evento o servicio'},
       {key:'indications', label:'Términos y condiciones', sub:'Sección con lista de bullets'},
-      {key:'observations', label:'Observaciones', sub:'Texto libre al final'}
+      {key:'observations', label:'Indicaciones', sub:'Texto libre al final'}
     ];
   }else{
     toggles = [
@@ -1617,6 +1694,38 @@ function renderCVPresets(){
 /* =============================================================
    PDF DOWNLOAD
 ============================================================= */
+
+/* Probes the largest canvas this device can actually produce, then returns the
+   highest html2canvas scale whose per-page A4 canvas stays within that limit.
+   Desktops handle very large canvases (ultra-HD output); phones — iOS Safari
+   especially — cap canvas dimensions, so a fixed high scale would silently
+   fail there. This picks the best each device can do. Result is cached. */
+let _pdfScale = null;
+function pickPdfScale(){
+  if(_pdfScale != null) return _pdfScale;
+  const PAGE_W = 794, PAGE_H = 1123;
+  const test = (w, h) => {
+    try{
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      const ctx = c.getContext('2d');
+      if(!ctx) return false;
+      // A corner pixel survives a round-trip only if the canvas is valid;
+      // an over-limit canvas silently fails this check.
+      ctx.fillStyle = '#ff0000';
+      ctx.fillRect(w - 2, h - 2, 2, 2);
+      return ctx.getImageData(w - 2, h - 2, 1, 1).data[0] === 255;
+    }catch(e){ return false; }
+  };
+  // 6 ≈ 576 dpi (ultra-HD) … 2 ≈ 192 dpi (safe floor)
+  const candidates = [6, 5, 4, 3.6, 3, 2.5, 2];
+  _pdfScale = 2;
+  for(const s of candidates){
+    if(test(Math.round(PAGE_W * s), Math.round(PAGE_H * s))){ _pdfScale = s; break; }
+  }
+  return _pdfScale;
+}
+
 async function downloadPDF(){
   const btn = $('#download-pdf');
   const orig = btn.innerHTML;
@@ -1659,7 +1768,8 @@ async function downloadPDF(){
     // small enough to stay within mobile-Safari's canvas-size limits even at
     // high resolution.
     const PAGE_W = 794, PAGE_H = 1123;
-    const SCALE = 4;   // 4x ≈ 384 dpi — sharper than standard print quality
+    // Highest scale this device can render without exceeding canvas limits.
+    const SCALE = pickPdfScale();   // up to 6 (≈576 dpi) on capable devices
     const viewport = document.createElement('div');
     viewport.style.cssText =
       'position:absolute;left:-9999px;top:0;width:' + PAGE_W + 'px;height:' +
@@ -1777,6 +1887,10 @@ function wire(){
     }else{
       state.quote.exams.push({name:'', time:'', sample:'', price:0});
     }
+    renderExams(); renderPreview();
+  });
+  $('#add-package').addEventListener('click', ()=>{
+    state.quote.exams.push({type:'package', name:'', price:0, includes:[{name:''}]});
     renderExams(); renderPreview();
   });
   $('#add-ind').addEventListener('click', ()=>{
@@ -2318,14 +2432,23 @@ function applyTemplateUI(){
   const itemsTitle = $('#items-title');
   const itemsLabel = $('#add-item-label');
   const indTitle = $('#indications-title');
+  const addPackageBtn = $('#add-package');
+  const obsTitle = $('#obs-title');
+  const sObsLabel = $('#s-obs-label');
   if(tmpl === 'general'){
     if(itemsTitle) itemsTitle.textContent = 'Items / Servicios';
     if(itemsLabel) itemsLabel.textContent = 'Agregar item';
     if(indTitle) indTitle.textContent = 'Términos y condiciones';
+    if(addPackageBtn) addPackageBtn.style.display = '';
+    if(obsTitle) obsTitle.textContent = 'Indicaciones';
+    if(sObsLabel) sObsLabel.textContent = 'Indicaciones predeterminadas';
   }else{
     if(itemsTitle) itemsTitle.textContent = 'Exámenes solicitados';
     if(itemsLabel) itemsLabel.textContent = 'Agregar examen';
     if(indTitle) indTitle.textContent = 'Indicaciones previas';
+    if(addPackageBtn) addPackageBtn.style.display = 'none';
+    if(obsTitle) obsTitle.textContent = 'Observaciones';
+    if(sObsLabel) sObsLabel.textContent = 'Observaciones predeterminadas';
   }
   // Apply per-section visibility based on toggles
   applySectionVisibility();
