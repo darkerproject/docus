@@ -1719,8 +1719,9 @@ function pickPdfScale(){
       return ctx.getImageData(w - 2, h - 2, 1, 1).data[0] === 255;
     }catch(e){ return false; }
   };
-  // 6 ≈ 576 dpi (ultra-HD) … 2 ≈ 192 dpi (safe floor)
-  const candidates = [6, 5, 4, 3.6, 3, 2.5, 2];
+  // 4 ≈ 384 dpi (above print quality) … 2 ≈ 192 dpi (safe floor).
+  // Capped at 4: higher scales produce enormous files for no visible gain.
+  const candidates = [4, 3.6, 3, 2.5, 2];
   _pdfScale = 2;
   for(const s of candidates){
     if(test(Math.round(PAGE_W * s), Math.round(PAGE_H * s))){ _pdfScale = s; break; }
@@ -1771,7 +1772,7 @@ async function downloadPDF(){
     // high resolution.
     const PAGE_W = 794, PAGE_H = 1123;
     // Highest scale this device can render without exceeding canvas limits.
-    const SCALE = pickPdfScale();   // up to 6 (≈576 dpi) on capable devices
+    const SCALE = pickPdfScale();   // up to 4 (≈384 dpi) on capable devices
     const viewport = document.createElement('div');
     viewport.style.cssText =
       'position:absolute;left:-9999px;top:0;width:' + PAGE_W + 'px;height:' +
@@ -1811,14 +1812,17 @@ async function downloadPDF(){
 
       let imgData;
       try{
-        // PNG = lossless — keeps text edges perfectly crisp (no JPEG softening).
-        imgData = pageCanvas.toDataURL('image/png');
+        // High-quality JPEG (0.95). Visually indistinguishable from PNG for a
+        // document, but ~10-20x smaller — PNG at this resolution produced
+        // multi-hundred-MB files. The slight blur seen before came from the
+        // old low scale (2x), not from JPEG itself.
+        imgData = pageCanvas.toDataURL('image/jpeg', 0.95);
       }catch(tdErr){
         throw new Error('toDataURL: ' + (tdErr && tdErr.message ? tdErr.message : 'canvas tainted'));
       }
 
       if(i > 0) pdf.addPage();
-      pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
+      pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
     }
 
     const customerName = state.template === 'cv'
