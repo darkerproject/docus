@@ -349,7 +349,7 @@ details.catalog[open] summary::before{transform:rotate(90deg)}
   font-weight:600;text-align:center;padding:6px;
 }
 .doc-company .doc-name{
-  font-weight:800;font-size:15.5px;letter-spacing:-.01em;color:var(--c2);
+  font-weight:800;font-size:22px;letter-spacing:-.01em;color:var(--c2);
   margin-bottom:3px;
 }
 .doc-company .doc-meta{font-size:10.5px;color:#666;line-height:1.5}
@@ -357,7 +357,7 @@ details.catalog[open] summary::before{transform:rotate(90deg)}
 .doc-badge{
   background:var(--c1);color:var(--c1-text);
   padding:8px 16px;
-  border-radius:6px;
+  border-radius:0;
   font-weight:700;font-size:13px;letter-spacing:.06em;
 }
 .doc-date{font-size:10.5px;color:#666}
@@ -722,7 +722,7 @@ details.catalog[open] summary::before{transform:rotate(90deg)}
   width:80px !important;
   height:80px !important;
 }
-.doc.doc-pdf-mode .doc-company .doc-name{font-size:15.5px !important}
+.doc.doc-pdf-mode .doc-company .doc-name{font-size:22px !important}
 .doc.doc-pdf-mode .doc-company .doc-meta{font-size:10.5px !important}
 .doc.doc-pdf-mode .doc-badge{padding:8px 16px !important;font-size:13px !important}
 .doc.doc-pdf-mode .doc-patient{

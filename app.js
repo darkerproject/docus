@@ -50,6 +50,7 @@ const DEFAULTS = {
     name:'',
     address:'',
     phone:'',
+    email:'',
     currency:'S/',
     c1:'#0e7c8e',
     c2:'#1f3a5f',
@@ -1428,7 +1429,7 @@ function renderPreview(){
       <div class="doc-company">
         <div class="doc-name">${escapeHTML(s.name||'NOMBRE DE LA EMPRESA')}</div>
         <div class="doc-meta">
-          ${escapeHTML(s.address||'Dirección de la empresa')}${s.phone?` · Tel: ${escapeHTML(s.phone)}`:''}
+          ${escapeHTML(s.address||'Dirección de la empresa')}${s.phone?` · Tel: ${escapeHTML(s.phone)}`:''}${s.email?` · ${escapeHTML(s.email)}`:''}
         </div>
       </div>
       <div class="doc-titlecol">
@@ -1446,7 +1447,7 @@ function renderPreview(){
     ${observationsHTML}
 
     <footer class="doc-foot">
-      ${escapeHTML(s.name||'')}${s.address?` &nbsp;|&nbsp; ${escapeHTML(s.address)}`:''}${s.phone?` &nbsp;|&nbsp; Tel: ${escapeHTML(s.phone)}`:''}
+      ${escapeHTML(s.name||'')}${s.address?` &nbsp;|&nbsp; ${escapeHTML(s.address)}`:''}${s.phone?` &nbsp;|&nbsp; Tel: ${escapeHTML(s.phone)}`:''}${s.email?` &nbsp;|&nbsp; ${escapeHTML(s.email)}`:''}
       <br>
       Esta cotización tiene una validez de ${q.validity||30} días a partir de la fecha de emisión.
     </footer>
@@ -1578,6 +1579,7 @@ function openSettings(){
   $('#s-name').value = s.name;
   $('#s-address').value = s.address;
   $('#s-phone').value = s.phone;
+  $('#s-email').value = s.email || '';
   $('#s-currency').value = s.currency;
   $('#s-c1').value = s.c1; $('#s-c1-hex').textContent = s.c1.toUpperCase();
   $('#s-c2').value = s.c2; $('#s-c2-hex').textContent = s.c2.toUpperCase();
@@ -1828,7 +1830,15 @@ async function downloadPDF(){
       .toLowerCase();
     const safe = cleaned || 'noname';
     const docType = state.template === 'cv' ? 'cv' : 'cotizacion';
-    const fname = `${docType}-${safe}-${new Date().toISOString().slice(0,10)}.pdf`;
+    let fname = `${docType}-${safe}-${new Date().toISOString().slice(0,10)}`;
+    // Append the quote number at the end of the filename, if one was entered.
+    if(state.template !== 'cv' && state.quote.number && state.quote.number.trim()){
+      const numClean = state.quote.number.trim()
+        .replace(/[^a-z0-9]+/gi, '-')
+        .replace(/^-+|-+$/g, '');
+      if(numClean) fname += `-${numClean}`;
+    }
+    fname += '.pdf';
     pdf.save(fname);
     showToast('PDF descargado');
   }catch(e){
@@ -2046,6 +2056,7 @@ function wire(){
     state.settings.name = $('#s-name').value.trim();
     state.settings.address = $('#s-address').value.trim();
     state.settings.phone = $('#s-phone').value.trim();
+    state.settings.email = $('#s-email').value.trim();
     state.settings.currency = $('#s-currency').value;
     state.settings.c1 = $('#s-c1').value;
     state.settings.c2 = $('#s-c2').value;
